@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extra Life 26 — Party Select</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Saira+Condensed:wght@600;700&family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
+<style>
+:root{
+  --bg-1:#2B3644; --bg-2:#1B242F;
+  --steel-1:#E8EDF3; --steel-2:#AAB6C4; --steel-3:#6E7B8C; --steel-4:#47525F;
+  --plate-1:#2A3340; --plate-2:#10161E;
+  --gold:#FFD200; --ink:#fff;
+  --p1:#C0392B; --p2:#2E5FA3; --p3:#D9A800; --p4:#27953F;
+  --display:"Archivo Black",Impact,sans-serif;
+  --cond:"Saira Condensed","Arial Narrow",sans-serif;
+  --round:"M PLUS Rounded 1c",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;min-height:100vh;font-family:var(--cond);color:var(--ink);
+  -webkit-font-smoothing:antialiased;background:var(--bg-2);
+  background-image:
+    linear-gradient(112deg,transparent 0 12%,rgba(255,255,255,.045) 12% 19%,transparent 19% 26%,rgba(255,255,255,.03) 26% 30%,transparent 30%),
+    linear-gradient(292deg,transparent 0 14%,rgba(255,255,255,.05) 14% 22%,transparent 22%),
+    linear-gradient(168deg,var(--bg-1) 0%,var(--bg-2) 55%,#131A23 100%);
+  display:flex;justify-content:center;padding:22px 16px 30px;
+}
+body.gloved,body.gloved *{cursor:none}
+.stage{width:min(1040px,100%);display:flex;flex-direction:column;gap:14px}
+
+/* join */
+.join{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(8,12,19,.93)}
+.joinBox{width:min(430px,92vw);padding:3px;border-radius:9px;
+  background:linear-gradient(158deg,var(--steel-1),var(--steel-2) 32%,var(--steel-3) 62%,var(--steel-4));
+  box-shadow:0 12px 40px rgba(0,0,0,.7)}
+.joinIn{background:linear-gradient(180deg,#1C2735,#0C121B);border-radius:7px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.joinIn h1{margin:0;font-family:var(--display);font-size:25px;line-height:1;transform:skewX(-10deg);
+  background:linear-gradient(180deg,#FDFEFF,#C3CDD9 45%,#7C8998 55%,#E3E9F0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px #20282F}
+.joinIn label{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8B9AAC;display:block;margin-bottom:5px}
+.joinIn input{width:100%;background:rgba(6,10,17,.85);border:1px solid #47566B;color:#fff;font:inherit;font-size:17px;padding:8px 11px;border-radius:3px}
+.joinIn input:focus{outline:none;border-color:var(--gold)}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.roleBtn{border:1px solid #47566B;background:rgba(6,10,17,.7);color:#B9C6D6;font:inherit;font-weight:700;
+  font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:9px 4px;border-radius:3px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px}
+.roleBtn small{font-size:10px;font-weight:600;letter-spacing:.02em;text-transform:none;color:#6F7F92}
+.roleBtn.sel{background:linear-gradient(180deg,var(--gold),#B08800);color:#151A22;border-color:var(--gold)}
+.roleBtn.sel small{color:#3A2E08}
+.goBtn{border:0;border-radius:4px;font:inherit;font-weight:700;font-size:16px;letter-spacing:.12em;
+  text-transform:uppercase;padding:11px;cursor:pointer;color:#151A22;
+  background:linear-gradient(180deg,var(--gold),#B08800);box-shadow:0 3px 8px rgba(0,0,0,.5)}
+.goBtn:disabled{opacity:.4;cursor:default}
+.pwMsg{margin-top:6px;font-size:12px;font-weight:600;color:#E8736A}
+.escape{position:fixed;left:8px;bottom:6px;z-index:80;border:0;background:transparent;
+  color:rgba(255,255,255,.16);font:inherit;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:4px 6px}
+.escape:hover{color:rgba(255,255,255,.7)}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px}
+.melee{font-family:var(--display);font-size:38px;line-height:.9;transform:skewX(-12deg);
+  background:linear-gradient(180deg,#FDFEFF,#C3CDD9 42%,#7C8998 55%,#E3E9F0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px #20282F;
+  white-space:nowrap;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+.vsbadge{width:96px;height:66px;flex:none;margin:0 -6px 0 -10px}
+.vsbadge svg{width:100%;height:100%;display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+.title{flex:1;min-width:0;padding:2px;background:linear-gradient(180deg,var(--steel-1),var(--steel-3) 50%,var(--steel-4));
+  clip-path:polygon(14px 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+.title .inner{background:linear-gradient(180deg,#1E2833,#0B1118 55%,#172029);
+  clip-path:polygon(13px 0,100% 0,calc(100% - 13px) 100%,0 100%);padding:6px 24px}
+.title span{display:block;text-align:center;font-family:var(--round);font-weight:700;font-size:17px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.title span em{font-style:normal;color:var(--gold)}
+
+/* roster */
+.roster{align-self:center;width:calc(9 * 104px + 8 * 3px);max-width:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
+.tile{width:104px;padding:2px;border:0;font:inherit;color:inherit;display:block;position:relative;
+  background:linear-gradient(160deg,var(--steel-1),var(--steel-2) 38%,var(--steel-3) 62%,var(--steel-4));
+  box-shadow:0 2px 3px rgba(0,0,0,.5);transition:transform .08s ease,filter .08s ease}
+.tile.hot{transform:translateY(-3px) scale(1.05);filter:brightness(1.2);z-index:4}
+.tile .art{position:relative;height:72px;overflow:hidden;background:linear-gradient(165deg,var(--a1),var(--a2))}
+.tile .art img{width:100%;height:100%;object-fit:cover;display:block}
+.tile .initials{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);
+  font-size:26px;color:rgba(30,40,52,.78);text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.tile .plate{background:linear-gradient(180deg,var(--plate-1),var(--plate-2));font-weight:700;font-size:10.5px;
+  line-height:17px;height:17px;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;padding:0 2px;color:#F2F6FB;text-shadow:0 1px 1px rgba(0,0,0,.9)}
+.tile .pucks{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tile .pucks .puck{position:absolute;transform:translate(-50%,-50%)}
+
+/* puck */
+.puck{font-family:var(--display);font-size:12px;line-height:1;color:#fff;
+  background:radial-gradient(120% 95% at 50% 8%,rgba(255,255,255,.72),rgba(255,255,255,0) 58%),
+    linear-gradient(180deg,color-mix(in srgb,var(--pc) 78%,#fff) 0%,var(--pc) 44%,color-mix(in srgb,var(--pc) 62%,#000) 100%);
+  border:2px solid #fff;border-radius:999px;padding:4px 7px;white-space:nowrap;
+  text-shadow:0 1px 2px rgba(0,0,0,.75);
+  box-shadow:0 2px 5px rgba(0,0,0,.7),0 0 0 2px rgba(0,0,0,.45),inset 0 -2px 3px rgba(0,0,0,.35)}
+.puck.big{font-size:16px;padding:7px 11px;border-width:3px}
+
+/* cards */
+.slots{align-self:center;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;max-width:100%;min-height:120px}
+.waiting{align-self:center;padding:34px 10px;font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:#6F8098}
+.slot{width:210px;position:relative;border:0;padding:11px 0 0;font:inherit;color:inherit;background:transparent}
+.hmn{position:absolute;left:8px;top:0;z-index:3;padding:1px;border-radius:2px;background:linear-gradient(180deg,var(--steel-2),var(--steel-4))}
+.hmn i{display:block;background:linear-gradient(180deg,#232C37,#0E141B);font-style:normal;font-weight:700;font-size:12px;
+  letter-spacing:.08em;line-height:1;padding:3px 9px;color:#EDF2F8;max-width:180px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;border-radius:1px}
+.hmn.mine i{background:linear-gradient(180deg,var(--gold),#A8860B);color:#171C24}
+.card{background:linear-gradient(158deg,var(--steel-1),var(--steel-2) 30%,var(--steel-3) 60%,var(--steel-4));
+  padding:3px;border-radius:7px;height:282px;display:flex;flex-direction:column;box-shadow:0 4px 8px rgba(0,0,0,.55)}
+.slot.mine .card{box-shadow:0 0 0 3px var(--gold),0 4px 12px rgba(0,0,0,.6)}
+.slot.hot .card{box-shadow:0 0 0 3px #fff,0 4px 14px rgba(0,0,0,.6)}
+.card .fill{flex:1;border-radius:5px;overflow:hidden;display:flex;flex-direction:column;position:relative;
+  background:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.24),transparent 62%),
+    linear-gradient(180deg,var(--c),color-mix(in srgb,var(--c) 62%,#06080C))}
+.card.blank .fill{background:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.1),transparent 62%),linear-gradient(180deg,#3A4756,#1A222C)}
+.card .art{flex:1;display:grid;place-items:center;min-height:0;padding:10px}
+.portrait{width:104px;height:104px;border-radius:4px;overflow:hidden;display:grid;place-items:center;
+  background:linear-gradient(165deg,var(--a1),var(--a2));font-family:var(--display);font-size:34px;
+  color:rgba(28,38,50,.8);text-shadow:0 1px 0 rgba(255,255,255,.4);box-shadow:0 4px 12px rgba(0,0,0,.45)}
+.portrait img{width:100%;height:100%;object-fit:cover}
+.card .empty{font-weight:700;font-size:12.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:center;line-height:1.8}
+.dock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}
+.namewrap{padding:0 10px 4px}
+.namewrap .np{background:linear-gradient(180deg,var(--steel-2),var(--steel-4));padding:1px;border-radius:3px}
+.namewrap .np b{display:block;background:linear-gradient(180deg,#222A35,#0D131A);border-radius:2px;font-family:var(--round);
+  font-weight:700;font-size:16px;line-height:1.35;text-align:center;padding:1px 6px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+.pnumband{background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.55));border-radius:0 0 5px 5px;padding:3px 0 7px 14px}
+.pnum{font-family:var(--display);font-style:italic;font-size:28px;line-height:1;text-align:left;
+  background-image:linear-gradient(180deg,#E9EEF5,#9AA6B4 48%,#6A7684 52%,#D6DDE6);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(20,26,34,.85)}
+
+/* footer */
+.footer{align-self:center;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:14px;font-weight:600;color:#93A2B4}
+.roleTag{font-size:11px;font-weight:700;letter-spacing:.14em;padding:3px 8px;border:1px solid #4A5768;color:#8B9AAC}
+.roleTag.live{color:var(--gold);border-color:#A8860B}
+.hint b{color:var(--gold)}
+.startBtn{font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;padding:6px 15px;border:0;border-radius:3px;
+  color:#171C24;background:linear-gradient(180deg,var(--gold),#B08800);box-shadow:0 2px 5px rgba(0,0,0,.5);cursor:pointer}
+.startBtn.on{background:linear-gradient(180deg,#E8564A,#96271C);color:#fff}
+.startBtn.wipe{background:linear-gradient(180deg,#7C8899,#4A5867);color:#fff}
+
+/* ready banner */
+.ready{position:fixed;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none}
+.ready .slash{width:140%;padding:14px 0 18px;text-align:center;transform:rotate(-5deg);
+  background:linear-gradient(180deg,rgba(205,32,24,0) 0%,rgba(205,32,24,.94) 14%,rgba(150,18,12,.96) 86%,rgba(150,18,12,0) 100%);
+  box-shadow:0 0 60px rgba(220,40,30,.55);border-top:2px solid rgba(255,190,60,.5);border-bottom:2px solid rgba(255,190,60,.5)}
+.ready h2{margin:0;font-family:var(--display);font-style:italic;font-size:clamp(32px,6vw,70px);line-height:1;
+  background-image:linear-gradient(180deg,#FFF6C6,#FFD84A 46%,#E09A08 54%,#FFF0B0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:2px #4A1008;
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,.6))}
+.ready p{margin:4px 0 0;font-family:var(--display);font-size:clamp(12px,1.8vw,20px);letter-spacing:.22em;
+  color:rgba(255,255,255,.9);text-shadow:0 2px 3px rgba(0,0,0,.6)}
+
+/* gloves */
+.gloves{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.glove{position:absolute;left:0;top:0;width:58px;height:64px;will-change:transform;transition:transform .06s linear}
+.glove.me{transition:none}
+.glove .art{position:absolute;inset:0}
+.glove .art svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6))}
+.glove .carry{position:absolute;left:20px;top:26px;z-index:2}
+.glove .who{position:absolute;left:28px;top:56px;font-family:var(--cond);font-weight:700;font-size:11px;
+  color:#fff;background:rgba(10,14,20,.85);padding:1px 6px;border-radius:2px;white-space:nowrap;max-width:150px;
+  overflow:hidden;text-overflow:ellipsis}
+
+@media (max-width:900px){.roster{width:100%}.melee{font-size:26px}}
+</style>
+</head>
+<body>
+
+<div class="join" id="join">
+  <div class="joinBox"><div class="joinIn">
+    <h1>EXTRA LIFE 26</h1>
+    <div>
+      <label for="jn">Your name</label>
+      <input id="jn" maxlength="20" placeholder="e.g. Dan" autocomplete="off">
+    </div>
+    <div>
+      <label>I am a…</label>
+      <div class="roles">
+        <button class="roleBtn" data-role="player" type="button">Player<small>pick a fighter</small></button>
+        <button class="roleBtn" data-role="viewer" type="button">Viewer<small>watch only</small></button>
+        <button class="roleBtn" data-role="admin"  type="button">Admin<small>run the show</small></button>
+      </div>
+    </div>
+    <div id="pwRow" hidden>
+      <label for="pw">Admin password</label>
+      <input id="pw" type="password" placeholder="password" autocomplete="off">
+      <div class="pwMsg" id="pwMsg" hidden>That isn't it.</div>
+    </div>
+    <button class="goBtn" id="go" type="button" disabled>Enter</button>
+  </div></div>
+</div>
+
+<div class="stage">
+  <div class="bar">
+    <div class="melee">PARTY</div>
+    <div class="vsbadge" aria-label="versus">
+      <svg viewBox="0 0 104 72" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 58 H60 a38 38 0 0 0 30-16 L104 24" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="9" stroke-linecap="round"/>
+        <path d="M0 66 H58 a44 44 0 0 0 34-18 L104 34" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="40" cy="32" r="25" fill="rgba(20,28,40,.55)" stroke="rgba(255,255,255,.34)" stroke-width="2"/>
+        <circle cx="40" cy="32" r="20" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1.6" stroke-dasharray="3 4"/>
+        <text x="40" y="41" text-anchor="middle" font-family="Archivo Black,Impact,sans-serif" font-size="21"
+              font-style="italic" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="1.6" letter-spacing="-1">VS</text>
+      </svg>
+    </div>
+    <div class="title"><div class="inner"><span id="banner">Assemble your party</span></div></div>
+  </div>
+  <div class="roster" id="roster"></div>
+  <div class="slots" id="slots"></div>
+  <div class="footer" id="footer"></div>
+</div>
+
+<div class="gloves" id="gloves"></div>
+<div class="ready" id="ready" hidden>
+  <div class="slash"><h2>READY TO FIGHT</h2><p>THE ADVENTURE AWAITS</p></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ==================================================================
+   CONFIG — edit these three, then the roster below.
+================================================================== */
+const SUPABASE_URL = "https://rrujjcarpdazwrdqcvmj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_SMzJlmZ0gP23nZM1zxlmTw_W3gyYm5B";
+const ADMIN_PASSWORD = "Dan";
+
+/* The party's opposition, shown after "vs" in the top banner. */
+const OPPOSITION = "Adventure";
+
+/* ROSTER — `name` required; `series` and `img` optional.
+   With no img the tile shows initials on a colour derived from the name. */
+const ROSTER = [
+  { name:"Goku", series:"Dragon Ball" },      { name:"Vegeta", series:"Dragon Ball" },
+  { name:"Luffy", series:"One Piece" },       { name:"Zoro", series:"One Piece" },
+  { name:"Nami", series:"One Piece" },        { name:"Naruto", series:"Naruto" },
+  { name:"Sasuke", series:"Naruto" },         { name:"Sakura", series:"Naruto" },
+  { name:"Ichigo", series:"Bleach" },         { name:"Rukia", series:"Bleach" },
+  { name:"Edward", series:"Fullmetal Alchemist" }, { name:"Alphonse", series:"Fullmetal Alchemist" },
+  { name:"Tanjiro", series:"Demon Slayer" },  { name:"Nezuko", series:"Demon Slayer" },
+  { name:"Zenitsu", series:"Demon Slayer" },  { name:"Deku", series:"My Hero Academia" },
+  { name:"Bakugo", series:"My Hero Academia" }, { name:"All Might", series:"My Hero Academia" },
+  { name:"Eren", series:"Attack on Titan" },  { name:"Mikasa", series:"Attack on Titan" },
+  { name:"Levi", series:"Attack on Titan" },  { name:"Gon", series:"Hunter x Hunter" },
+  { name:"Killua", series:"Hunter x Hunter" },{ name:"Yusuke", series:"Yu Yu Hakusho" },
+  { name:"Spike", series:"Cowboy Bebop" },    { name:"Faye", series:"Cowboy Bebop" },
+  { name:"Saitama", series:"One Punch Man" }, { name:"Genos", series:"One Punch Man" },
+  { name:"Gojo", series:"Jujutsu Kaisen" },   { name:"Yuji", series:"Jujutsu Kaisen" },
+  { name:"Asta", series:"Black Clover" },     { name:"Mereoleona", series:"Black Clover" },
+  { name:"Thorfinn", series:"Vinland Saga" }, { name:"Guts", series:"Berserk" },
+  { name:"Inuyasha", series:"Inuyasha" },     { name:"Kenshin", series:"Rurouni Kenshin" },
+];
+
+/* ================================================================== */
+
+const SLOT_COUNT = 4;
+const SLOT_VARS = ["--p1","--p2","--p3","--p4"];
+const SLOT_HEX  = ["#C0392B","#2E5FA3","#D9A800","#27953F"];
+
+const slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const BY_ID = new Map(ROSTER.map(c => [slug(c.name), c]));
+const initialsFor = n => n.split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+function washFor(el,name){let h=0;for(let i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))%360;
+  el.style.setProperty("--a1",`hsl(${h} 22% 79%)`);el.style.setProperty("--a2",`hsl(${(h+24)%360} 20% 52%)`);}
+function stored(k,make){try{let v=localStorage.getItem(k);if(!v&&make){v=make();localStorage.setItem(k,v);}return v;}catch(e){return make?make():null;}}
+
+const myId  = stored("elViewerId",()=>"v-"+Math.random().toString(36).slice(2,10));
+const tabId = "t-"+Math.random().toString(36).slice(2,10);   // this page load only
+
+let ROLE=null, myName="", slots={}, adminLock=false, seatFull=false;
+let peers=[], hotTarget=null, sb=null, handsCh=null, ready=false;
+
+const CAN_PLAY = () => ROLE==="player" || ROLE==="admin";
+const seatOf = n => { const s=slots[String(n)]; return s && s.viewer_id ? s : null; };
+const mySlot = () => { for(let n=1;n<=SLOT_COUNT;n++){const s=seatOf(n);if(s&&s.viewer_id===myId)return n;} return null; };
+const charIn = n => { const s=seatOf(n); return s&&s.character_id&&!s.held ? BY_ID.get(s.character_id) : null; };
+const carrying = () => { const n=mySlot(); const s=n!==null?seatOf(n):null; return s&&s.held ? n : null; };
+const pucksOn = id => {
+  const out=[];
+  for(let n=1;n<=SLOT_COUNT;n++){
+    const s=seatOf(n);
+    if(s && !s.held && s.character_id===id)
+      out.push({ n, px: typeof s.px==="number"?s.px:0.5, py: typeof s.py==="number"?s.py:0.32 });
+  }
+  return out;
+};
+function allPlaced(){
+  let claimed=0;
+  for(let n=1;n<=SLOT_COUNT;n++){
+    const s=seatOf(n); if(!s) continue;
+    claimed++;
+    if(s.held || !s.character_id) return false;
+  }
+  return claimed>0;
+}
+const bannerOn = () => allPlaced() || adminLock;
+
+/* ---------- writes (Supabase) ---------- */
+async function pushSeat(n, patch){
+  const cur = slots[String(n)] || {};
+  const row = { ...cur, ...patch, seat:n, viewer_id:myId, updated_at:new Date().toISOString() };
+  slots[String(n)] = row; render();                       // optimistic
+  if(!sb) return;
+  const { error } = await sb.from("seats").upsert(row, { onConflict:"seat" });
+  if(error) console.warn("seat write", error.message);
+}
+async function dropSeat(n){
+  delete slots[String(n)]; if(carrying()===n) {} render();
+  if(!sb) return;
+  const { error } = await sb.from("seats").delete().eq("seat", n);
+  if(error) console.warn("seat clear", error.message);
+}
+async function setAdminLock(v){
+  adminLock=v; render();
+  if(!sb) return;
+  const { error } = await sb.from("board").update({ locked:v, updated_at:new Date().toISOString() }).eq("id",1);
+  if(error) console.warn("lock", error.message);
+}
+async function clearBoard(){
+  if(ROLE!=="admin") return;
+  slots={}; adminLock=false; seatFull=false; render();
+  if(!sb) return;
+  await sb.from("seats").delete().gte("seat",1);
+  await sb.from("board").update({ locked:false, updated_at:new Date().toISOString() }).eq("id",1);
+}
+
+/* Claim the lowest free seat. `seat` is the primary key, so a concurrent
+   insert for the same seat is rejected by the database itself -- first write
+   wins, no lease or lock needed. */
+async function autoSeat(){
+  if(!CAN_PLAY() || mySlot()!==null) return;
+  for(let n=1;n<=SLOT_COUNT;n++){
+    if(seatOf(n)) continue;
+    const row = { seat:n, viewer_id:myId, player_name:myName, character_id:"", held:false, px:0.5, py:0.32 };
+    if(!sb){ slots[String(n)]=row; render(); return; }
+    const { error } = await sb.from("seats").insert(row);
+    if(!error){ slots[String(n)]=row; render(); return; }
+    if(error.code !== "23505") console.warn("seat", n, error.message);  // 23505 = taken
+  }
+  seatFull=true; render();
+}
+
+/* ---------- puck actions ---------- */
+function liftPuck(){ const n=mySlot(); if(n===null||adminLock) return; pushSeat(n,{ held:true }); }
+function placeOnTile(cid,px,py){ const n=carrying(); if(n===null) return; pushSeat(n,{ character_id:cid, px, py, held:false }); }
+function placeBackOnSeat(){ const n=carrying(); if(n===null) return; pushSeat(n,{ character_id:"", held:false }); }
+
+function onWorldPress(ev){
+  if(!CAN_PLAY()||adminLock) return;
+  const tileEl = ev.target.closest && ev.target.closest("[data-char]");
+  const slotEl = ev.target.closest && ev.target.closest("[data-seat]");
+  const held = carrying(), mine = mySlot();
+
+  if(held!==null){
+    if(tileEl){
+      const r = tileEl.getBoundingClientRect();
+      const clamp = v => Math.min(0.93, Math.max(0.07, v));
+      placeOnTile(tileEl.dataset.char, clamp((ev.clientX-r.left)/r.width), clamp((ev.clientY-r.top)/r.height));
+      return;
+    }
+    if(slotEl && Number(slotEl.dataset.seat)===held){ placeBackOnSeat(); return; }
+    return;
+  }
+  if(mine===null) return;
+  const s = seatOf(mine);
+  if(slotEl && Number(slotEl.dataset.seat)===mine){ liftPuck(); return; }
+  if(tileEl && s && s.character_id===tileEl.dataset.char){ liftPuck(); return; }
+}
+
+/* ---------- render ---------- */
+function puckEl(n,big){
+  const d=document.createElement("div");
+  d.className="puck"+(big?" big":"");
+  d.style.setProperty("--pc",SLOT_HEX[n-1]);
+  d.textContent="P"+n;
+  return d;
+}
+function renderRoster(){
+  const host=document.getElementById("roster"); host.replaceChildren();
+  for(const c of ROSTER){
+    const id=slug(c.name);
+    const tile=document.createElement("div");
+    tile.className="tile"+(hotTarget&&hotTarget.kind==="tile"&&hotTarget.key===id?" hot":"");
+    tile.dataset.char=id;
+    tile.title=c.series?`${c.name} — ${c.series}`:c.name;
+    const art=document.createElement("div"); art.className="art"; washFor(art,c.name);
+    if(c.img){const i=document.createElement("img");i.src=c.img;i.alt="";art.appendChild(i);}
+    else{const v=document.createElement("div");v.className="initials";v.textContent=initialsFor(c.name);art.appendChild(v);}
+    tile.appendChild(art);
+    const on=pucksOn(id);
+    if(on.length){
+      const wrap=document.createElement("div"); wrap.className="pucks";
+      for(const q of on){
+        const el=puckEl(q.n);
+        el.style.left=(q.px*100).toFixed(2)+"%";
+        el.style.top=(q.py*100).toFixed(2)+"%";
+        wrap.appendChild(el);
+      }
+      tile.appendChild(wrap);
+    }
+    const p=document.createElement("div"); p.className="plate"; p.textContent=c.name; tile.appendChild(p);
+    host.appendChild(tile);
+  }
+}
+function renderSlots(){
+  const host=document.getElementById("slots"); host.replaceChildren();
+  const joined=[];
+  for(let n=1;n<=SLOT_COUNT;n++) if(seatOf(n)) joined.push(n);
+  if(!joined.length){
+    const w=document.createElement("div"); w.className="waiting";
+    w.textContent = seatFull ? "All four seats are taken."
+      : CAN_PLAY() ? "Taking your seat…" : "Waiting for players to join…";
+    host.appendChild(w); return;
+  }
+  for(const n of joined){
+    const s=seatOf(n), c=charIn(n), isMine=s&&s.viewer_id===myId;
+    const slot=document.createElement("div");
+    slot.className="slot"+(isMine?" mine":"")+(hotTarget&&hotTarget.kind==="slot"&&hotTarget.key===n?" hot":"");
+    slot.dataset.seat=String(n);
+    slot.style.setProperty("--c",`var(${SLOT_VARS[n-1]})`);
+
+    const hmn=document.createElement("div"); hmn.className="hmn"+(isMine?" mine":"");
+    const hi=document.createElement("i");
+    hi.textContent=s.player_name ? s.player_name.toUpperCase() : "HMN";
+    hmn.appendChild(hi); slot.appendChild(hmn);
+
+    const card=document.createElement("div"); card.className="card"+(c?"":" blank");
+    const fill=document.createElement("div"); fill.className="fill";
+    const art=document.createElement("div"); art.className="art";
+    if(c){
+      const p=document.createElement("div"); p.className="portrait"; washFor(p,c.name);
+      if(c.img){const i=document.createElement("img");i.src=c.img;i.alt="";p.appendChild(i);}
+      else p.textContent=initialsFor(c.name);
+      art.appendChild(p);
+    }else{
+      const e=document.createElement("div"); e.className="empty";
+      e.textContent = s.held ? "Puck in hand" : "Place your puck";
+      art.appendChild(e);
+    }
+    fill.appendChild(art);
+    if(!s.held && !s.character_id){
+      const d=document.createElement("div"); d.className="dock";
+      d.appendChild(puckEl(n,true)); fill.appendChild(d);
+    }
+    const nw=document.createElement("div"); nw.className="namewrap";
+    const np=document.createElement("div"); np.className="np";
+    const b=document.createElement("b"); b.textContent=c?c.name:"—";
+    np.appendChild(b); nw.appendChild(np); fill.appendChild(nw);
+    const band=document.createElement("div"); band.className="pnumband";
+    const pn=document.createElement("div"); pn.className="pnum"; pn.textContent="P"+n;
+    band.appendChild(pn); fill.appendChild(band);
+    card.appendChild(fill); slot.appendChild(card); host.appendChild(slot);
+  }
+}
+function renderBanner(){
+  const names=[];
+  for(let n=1;n<=SLOT_COUNT;n++){const c=charIn(n); if(c) names.push(c.name);}
+  const el=document.getElementById("banner"); el.replaceChildren();
+  if(!names.length){ el.textContent="Assemble your party"; return; }
+  el.append(document.createTextNode(names.join(", ")+"  "));
+  const em=document.createElement("em"); em.textContent="vs"; el.appendChild(em);
+  el.append(document.createTextNode("  "+OPPOSITION));
+}
+function renderFooter(){
+  const host=document.getElementById("footer"); host.replaceChildren();
+  if(ROLE==="viewer") return;                 // the broadcast source carries no chrome
+
+  const tag=document.createElement("span");
+  const bits=[]; if(sb) bits.push("SYNC"); if(ready) bits.push("HANDS");
+  tag.className="roleTag"+(bits.length===2?" live":"");
+  tag.textContent=(ROLE||"").toUpperCase()+" · "+(bits.length?bits.join(" + "):"OFFLINE");
+  host.appendChild(tag);
+
+  const hint=document.createElement("span"); hint.className="hint";
+  const held=carrying();
+  hint.textContent = adminLock ? "Board locked by the host."
+    : held!==null ? "Carrying your puck — click a fighter to place it."
+    : seatFull ? "All four seats are taken — watching."
+    : mySlot()===null ? "Taking your seat…"
+    : charIn(mySlot()) ? "Placed. Click your puck again to move it."
+    : "Click your puck to pick it up.";
+  host.appendChild(hint);
+
+  if(ROLE==="admin"){
+    const b=document.createElement("button");
+    b.className="startBtn"+(adminLock?" on":""); b.type="button";
+    b.textContent=adminLock?"Unlock board":"Lock it in";
+    b.addEventListener("click",e=>{e.stopPropagation();setAdminLock(!adminLock);});
+    const w=document.createElement("button");
+    w.className="startBtn wipe"; w.type="button"; w.textContent="Clear board";
+    w.title="Free every seat";
+    w.addEventListener("click",e=>{e.stopPropagation();clearBoard();});
+    host.append(b,w);
+  }
+}
+function render(){
+  if(!ROLE) return;
+  document.getElementById("ready").hidden = !bannerOn();
+  renderRoster(); renderSlots(); renderBanner(); renderFooter(); renderGloves();
+}
+
+/* ---------- gloves ---------- */
+function gloveSVG(pose,label){
+  const tag = label ? `<text x="32" y="45" text-anchor="middle" font-family="Archivo Black,Impact,sans-serif"
+      font-size="13" fill="#fff" stroke="#12171F" stroke-width="3.2" paint-order="stroke" letter-spacing="-.4">${label}</text>` : "";
+  const cuff = `<path fill="var(--gD)" d="M14 47h31a4.3 4.3 0 0 1 0 8.6H14a4.3 4.3 0 0 1 0-8.6z"/>`;
+  const thumb = `<path fill="var(--gC)" d="M13 34a5.1 5.1 0 0 1 3.5-8.6L19.5 28"/>`;
+  if(pose==="point") return `<svg viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#12171F" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <path fill="var(--gA)" d="M19 26V7a4.8 4.8 0 0 1 9.6 0v20"/>
+      <path fill="var(--gC)" d="M28.5 31a5 5 0 0 1 9.4 0v3h-9.4z"/>${thumb}
+      <path fill="var(--gB)" d="M15 29h27.5a6.1 6.1 0 0 1 6.1 6.1v7a16.2 16.2 0 0 1-16.2 16.2h-7A14.1 14.1 0 0 1 11.3 44.2V33z"/>
+      ${cuff}</g>${tag}</svg>`;
+  if(pose==="grab") return `<svg viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#12171F" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <path fill="var(--gA)" d="M20 31v-9.5a4.7 4.7 0 0 1 9.4 0V31"/>
+      <path fill="var(--gC)" d="M29 31v-7.5a4.6 4.6 0 0 1 9.2 0V32"/>${thumb}
+      <path fill="var(--gB)" d="M16 30h28a6.1 6.1 0 0 1 6.1 6.1v6A16.2 16.2 0 0 1 33.9 58.3h-7A14.1 14.1 0 0 1 12.8 44.2V33z"/>
+      ${cuff}</g>${tag}</svg>`;
+  return `<svg viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#12171F" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+      <path fill="var(--gA)" d="M19 28V13a4.7 4.7 0 0 1 9.4 0v15"/>
+      <path fill="var(--gA)" d="M28 28V10a4.7 4.7 0 0 1 9.4 0v18"/>
+      <path fill="var(--gC)" d="M37 28V14a4.6 4.6 0 0 1 9.2 0v15"/>${thumb}
+      <path fill="var(--gB)" d="M15 28h30a6.1 6.1 0 0 1 6.1 6.1v8A16.2 16.2 0 0 1 34.9 58.3h-8A14.1 14.1 0 0 1 12.8 44.2V33z"/>
+      ${cuff}</g>${tag}</svg>`;
+}
+const GLOVE_HUES = [
+  { a:"#FFE2DE", b:"#F0736A", c:"#C93A2D", d:"#9E2A20" },
+  { a:"#DDE9FB", b:"#5F93DF", c:"#2E5FA3", d:"#20447A" },
+  { a:"#FFF2CC", b:"#F0C64A", c:"#C99A06", d:"#9A7505" },
+  { a:"#DCF3E0", b:"#5DBE6C", c:"#27953F", d:"#1B6E2D" },
+];
+const GLOVE_PLAIN = { a:"#FFFFFF", b:"#EDF0F5", c:"#C9D0DA", d:"#AEB7C4" };
+
+const gloveHost=document.getElementById("gloves");
+const gloveEls=new Map();
+let myPos={x:.5,y:.5};
+
+function gloveFor(key){
+  let el=gloveEls.get(key);
+  if(!el){
+    el=document.createElement("div");
+    el.className="glove"+(key==="me"?" me":"");
+    const art=document.createElement("div"); art.className="art";
+    const carry=document.createElement("div"); carry.className="carry";
+    const who=document.createElement("div"); who.className="who";
+    el.append(art,carry,who); el._key="";
+    gloveHost.appendChild(el); gloveEls.set(key,el);
+  }
+  return el;
+}
+function paintGlove(key,x,y,pose,slotNum,name){
+  const el=gloveFor(key);
+  el.style.transform=`translate(${x*window.innerWidth}px,${y*window.innerHeight}px)`;
+  const hue = slotNum ? GLOVE_HUES[slotNum-1] : GLOVE_PLAIN;
+  el.style.setProperty("--gA",hue.a); el.style.setProperty("--gB",hue.b);
+  el.style.setProperty("--gC",hue.c); el.style.setProperty("--gD",hue.d);
+  const sig = pose+"|"+(slotNum||"");
+  if(el._key!==sig){ el.querySelector(".art").innerHTML = gloveSVG(pose, slotNum?"P"+slotNum:""); el._key=sig; }
+  const carry=el.querySelector(".carry"); carry.replaceChildren();
+  if(pose==="grab"&&slotNum) carry.appendChild(puckEl(slotNum));
+  const who=el.querySelector(".who"); who.textContent=name||""; who.hidden=!name;
+}
+function myPose(){ if(carrying()!==null) return "grab"; return hotTarget ? "point" : "open"; }
+function renderGloves(){
+  if(CAN_PLAY()) paintGlove("me",myPos.x,myPos.y,myPose(),mySlot(),myName);
+  const seen=new Set(CAN_PLAY()?["me"]:[]);
+  for(const p of peers){
+    if(!p || typeof p.x!=="number" || typeof p.y!=="number") continue;
+    if(p.tab===tabId) continue;
+    seen.add(p.tab);
+    paintGlove(p.tab,p.x,p.y,typeof p.pose==="string"?p.pose:"open",
+               typeof p.slot==="number"?p.slot:null,typeof p.name==="string"?p.name:"");
+  }
+  for(const [k,el] of gloveEls) if(!seen.has(k)){ el.remove(); gloveEls.delete(k); }
+}
+function updateHot(ev){
+  const t=ev.target.closest && ev.target.closest("[data-char]");
+  const s=ev.target.closest && ev.target.closest("[data-seat]");
+  const next = t ? {kind:"tile",key:t.dataset.char} : s ? {kind:"slot",key:Number(s.dataset.seat)} : null;
+  if(JSON.stringify(next)===JSON.stringify(hotTarget)) return;
+  hotTarget=next;
+  for(const el of document.querySelectorAll(".tile.hot,.slot.hot")) el.classList.remove("hot");
+  if(t) t.classList.add("hot"); else if(s) s.classList.add("hot");
+}
+
+/* ---------- join ---------- */
+const joinEl=document.getElementById("join");
+const nameIn=document.getElementById("jn");
+const goBtn=document.getElementById("go");
+const pwRow=document.getElementById("pwRow");
+const pwIn=document.getElementById("pw");
+const pwMsg=document.getElementById("pwMsg");
+const pwOk=()=>pwIn.value.trim().toLowerCase()===ADMIN_PASSWORD.toLowerCase();
+let pickedRole=null;
+
+const escape=document.createElement("button");
+escape.className="escape"; escape.type="button"; escape.textContent="change role";
+escape.addEventListener("click",()=>{ try{localStorage.removeItem("elRole");}catch(e){} location.reload(); });
+document.body.appendChild(escape);
+
+nameIn.value = stored("elName") || "";
+document.querySelectorAll(".roleBtn").forEach(b=>{
+  b.addEventListener("click",()=>{
+    pickedRole=b.dataset.role;
+    document.querySelectorAll(".roleBtn").forEach(o=>o.classList.toggle("sel",o===b));
+    pwRow.hidden = pickedRole!=="admin"; pwMsg.hidden=true;
+    if(pickedRole==="admin") pwIn.focus();
+    refreshGo();
+  });
+});
+nameIn.addEventListener("input",refreshGo);
+pwIn.addEventListener("input",()=>{ pwMsg.hidden=true; refreshGo(); });
+pwIn.addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  if(goBtn.disabled && !pwOk()){ pwMsg.hidden=false; return; }
+  if(!goBtn.disabled) enter();
+});
+nameIn.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!goBtn.disabled) enter(); });
+goBtn.addEventListener("click",enter);
+function refreshGo(){
+  const needsName = pickedRole!=="viewer" && !nameIn.value.trim();
+  const needsPw = pickedRole==="admin" && !pwOk();
+  goBtn.disabled = !pickedRole || needsName || needsPw;
+}
+
+const savedRole = stored("elRole");
+if(savedRole==="player"||savedRole==="viewer"||savedRole==="admin"){
+  pickedRole=savedRole; nameIn.value=stored("elName")||""; enter();
+}
+
+let presenceTimer=0;
+function enter(){
+  ROLE=pickedRole; myName=nameIn.value.trim();
+  try{ localStorage.setItem("elName",myName); localStorage.setItem("elRole",ROLE); }catch(e){}
+  joinEl.remove();
+  if(CAN_PLAY()) document.body.classList.add("gloved");
+
+  window.addEventListener("pointermove",e=>{
+    myPos={x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight};
+    updateHot(e); renderGloves();
+    if(handsCh && ready && CAN_PLAY() && !presenceTimer){
+      // coalesce to ~25/s; Realtime rate-limits per client
+      presenceTimer=setTimeout(()=>{
+        presenceTimer=0;
+        handsCh.track({ x:myPos.x, y:myPos.y, pose:myPose(), slot:mySlot(), name:myName, tab:tabId });
+      },40);
+    }
+  },{passive:true});
+
+  if(CAN_PLAY()) document.addEventListener("pointerdown",onWorldPress);
+  render();
+  connect();
+}
+
+/* ---------- Supabase ---------- */
+async function connect(){
+  if(!window.supabase){ console.warn("supabase-js failed to load"); renderFooter(); return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    realtime:{ params:{ eventsPerSecond: 30 } }
+  });
+
+  // initial state
+  const [{ data:seatRows }, { data:boardRow }] = await Promise.all([
+    sb.from("seats").select("*"),
+    sb.from("board").select("locked").eq("id",1).maybeSingle(),
+  ]);
+  slots={}; (seatRows||[]).forEach(r=>{ slots[String(r.seat)]=r; });
+  adminLock = !!(boardRow && boardRow.locked);
+  render();
+
+  // live table changes
+  sb.channel("board-sync")
+    .on("postgres_changes",{event:"*",schema:"public",table:"seats"},p=>{
+      if(p.eventType==="DELETE"){ const k=String((p.old&&p.old.seat)??""); if(k) delete slots[k]; }
+      else if(p.new){ slots[String(p.new.seat)] = p.new; }
+      render();
+    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"board"},p=>{
+      if(p.new) adminLock = !!p.new.locked;
+      render();
+    })
+    .subscribe();
+
+  // live hands
+  handsCh = sb.channel("hands", { config:{ presence:{ key: tabId } } });
+  handsCh.on("presence",{event:"sync"},()=>{
+    const state = handsCh.presenceState();
+    peers = Object.values(state).flat();
+    renderGloves();
+  });
+  handsCh.subscribe(async status=>{
+    if(status!=="SUBSCRIBED") return;
+    ready=true; renderFooter();
+    if(CAN_PLAY()) await handsCh.track({ x:myPos.x, y:myPos.y, pose:"open", slot:null, name:myName, tab:tabId });
+  });
+
+  renderFooter();
+  setTimeout(autoSeat, 500);
+}
+</script>
+</body>
+</html>
