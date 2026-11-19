@@ -5,20 +5,37 @@ seat, and drag a numbered puck onto the fighter they want. Everyone's cursor is
 a coloured glove visible to every other viewer, so the stream sees hands moving
 around the roster in real time.
 
-## Deploying
+## Running it
 
-One file, no build step. Serve `index.html` from any web server:
+The page, the images and the sync all come from one Node service, so the tunnel
+needs a single ingress rule and there is no cloud account in the path.
 
 ```
-git clone https://github.com/D-lougheed/ExtraLife26.git
+npm install
+node server.js
 ```
 
-Point the domain at it and you're done. Supabase's client library and the fonts
-load from CDNs, so the only requirement is that the machine can reach the
-internet.
+It listens on **8080** unless `PORT` says otherwise, prints the URL, and answers
+`/health` with the live client and seat count. Point the Cloudflare tunnel at
+that port.
 
-**Serve it over HTTPS.** Pointer events behave inconsistently over plain HTTP in
-some browsers, and players joining on phones will expect the padlock.
+On first run it prints the admin password and saves it to
+`admin-password.txt`, so a restart keeps the same one. Set your own with
+`ADMIN_PASSWORD=whatever node server.js`, or edit that file. Both are ignored by
+git, and the password is never sent to the page — the server is the only thing
+that checks it.
+
+State lives in memory and is mirrored to `state.json` beside the server, so a
+crash or a restart mid-show comes back with the same seats, the same picks and
+the same spent clues. Delete that file for a clean slate.
+
+Only the page, the images and `/health` are served. Source, saved state and the
+password file are not reachable over HTTP, which matters when the port is on a
+public tunnel.
+
+**Serve it over HTTPS** (the tunnel already does). Pointer events behave
+inconsistently over plain HTTP in some browsers, and the page picks `wss://`
+automatically when it is loaded over TLS.
 
 ## Roles
 
@@ -26,9 +43,9 @@ Everyone uses the same URL; the join screen sorts out who is who.
 
 | Role | What it does |
 |---|---|
-| **Player** | Takes the next free seat (P1, P2, P3, P4 in join order), carries a puck, picks a fighter |
+| **Player** | Takes the next free seat (P1, P2, P3 in join order), carries a puck, picks a fighter |
 | **Viewer** | The broadcast source. No cursor of its own and no interface chrome — just the board and everyone's hands. This is the one to point OBS at |
-| **Admin** | Everything a player can do, plus **Lock it in** and **Clear board**. Password gated |
+| **Admin** | Runs the board and takes no seat, keeping a plain glove to point with, plus **Lock it in** and **Clear board**. Password gated |
 
 For OBS: add it as a **Browser Source**, set width and height to your canvas, and
 turn off *Shutdown source when not visible* so it stays connected while you are
@@ -48,14 +65,14 @@ every screen. The moment anyone lifts a puck, it disappears again.
 ## Configuration
 
 Everything adjustable sits in one block at the top of the `<script>` in
-`index.html`:
+`index.html`. The seat count lives in `SLOT_COUNT` just below it, and the port
+is `PORT` in the environment:
 
 | Setting | Purpose |
 |---|---|
-| `SUPABASE_URL` / `SUPABASE_KEY` | The realtime backend. Already wired to the Extra Life 26 project |
-| `ADMIN_PASSWORD` | Gates the admin role |
 | `OPPOSITION` | The text after "vs" in the top banner |
 | `ROSTER` | The character list |
+| `BOARDS` | The jeopardy boards: three of them, six categories each, five clues per category |
 
 A roster entry needs only a name:
 
@@ -67,22 +84,76 @@ A roster entry needs only a name:
 the tile shows the character's initials on a colour derived from the name, which
 is stable across reloads.
 
+## Character art
+
+A roster entry needs no `img`. The tile looks for `images/<slug>.png` and then
+`images/<slug>.jpg`, where the slug is the name lowercased with spaces turned
+into hyphens — `Aoi Todo` becomes `images/aoi-todo.png`. Nothing found leaves
+the coloured initials tile, which is a supported state.
+
+To swap a character's picture, drop a file at that path and reload. No code
+change, no rebuild. The same lookup fills the portrait on the player's card.
+
+Art currently in the repo came from each series' Fandom wiki, except Alphonse,
+Eren and Aoi Todo, which use the portraits that were already in `images/`.
+
+## The jeopardy board
+
+**Start the game** in the admin footer moves every screen — players and the OBS
+viewer — onto the board. The flow from there:
+
+1. The admin clicks a cell. The clue fills the screen on every connected page.
+2. **Show answer** puts the answer up for everyone.
+3. **Next** marks that cell dark and unpickable and returns everyone to the grid.
+
+Clearing the last cell on a board moves straight to the next one, so the night
+runs board 1 to board 3 without an extra click. **Next board** skips ahead early;
+**Back to party select** returns everyone to the roster screen.
+
+Only the admin can pick. Players and viewers see the same screen with no
+controls, and their pucks are frozen while the board is up. Hands stay live, so
+the admin can still point at a category.
+
+Progress lives in `board.game` and survives a reload — an OBS source that
+reconnects mid-show lands back on the right screen. **Clear board** frees the
+seats and returns everyone to select but deliberately keeps trivia progress, so
+a mid-show reset does not replay answered clues.
+
+Editing `BOARDS` is the only thing needed to change the questions. The grid is
+drawn from that array, so a category with four clues instead of five just works.
+
 ## Backend
 
-Supabase project **Extra Life 26** (`rrujjcarpdazwrdqcvmj`), two tables:
+Two files, split so the interesting logic is not tangled with socket plumbing.
 
-- `seats` — one row per occupied seat. `seat` is the primary key, so two people
-  claiming at once is resolved by the database rejecting the second insert
-  rather than by any locking in the page
-- `board` — a single row holding the admin lock
+| File | Responsibility |
+|---|---|
+| `room.js` | Pure state machine. Takes a message, returns the next state plus what to send where. No I/O, no sockets. This is the part under test — `npm test` |
+| `server.js` | Transport. Serves the files, holds the WebSocket room, calls `room.js` and fans out the result, mirrors state to `state.json` |
 
-Live hands ride on Supabase Realtime Presence, which is ephemeral and never
-touches the database.
+The room is `{ seats, locked, game }`. Clients send `hello`, `claim`, `seat`,
+`lock`, `clear`, `game` and `hand`; the server answers with `state` (the whole
+room, after any change), `hand` (relayed, never stored), `gone` (drop that
+glove) and `full`.
+
+Seat claiming is atomic: the server picks the lowest free seat under one lock,
+so there is no race to resolve and no retry loop in the page. A seat is held by
+`viewer_id` and is **not** freed when a socket closes — a reload, a flaky phone
+or a dropped tunnel puts that player back in their own chair. Only *Clear board*
+frees seats.
+
+The page reconnects on its own with backoff (500ms doubling to 5s, jittered), so
+an OBS source that loses its socket comes back by itself rather than sitting
+dead for the rest of the night. The footer reads `LIVE` or `OFFLINE`.
 
 ### Access
 
-Row level security is open to anonymous visitors on both tables. That is what
-lets people join from a link without signing in, and it means **anyone who has
-the URL can take a seat**. For a one-evening charity stream that is the intended
-trade; if the link circulates further than you would like, the options are a
-room code in the page or tightening the policies.
+Anyone with the URL can open the page and take a seat — for a one-evening
+charity stream that is the intended trade. If the link circulates further than
+you would like, a room code in the page is the next step.
+
+Admin is different. The password lives only on the server; the page sends what
+was typed and the server decides. Getting it wrong sends you back to the join
+screen rather than handing you a board full of buttons that do nothing, and a
+connection that claimed admin without the password is treated as a viewer for
+every message it sends afterwards. `npm test` covers that.

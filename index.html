@@ -145,8 +145,39 @@ body.gloved,body.gloved *{cursor:none}
 .startBtn.on{background:linear-gradient(180deg,#E8564A,#96271C);color:#fff}
 .startBtn.wipe{background:linear-gradient(180deg,#7C8899,#4A5867);color:#fff}
 
+/* jeopardy board */
+#jeopardy{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;gap:10px;
+  padding:16px 18px 14px;background:radial-gradient(120% 90% at 50% 0%,#132a6b 0%,#0a1330 55%,#070b18 100%)}
+#jeopardy.on{display:flex}
+.jbHead{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.jbTitle{font-family:var(--display);font-style:italic;font-size:clamp(17px,2.3vw,30px);color:#fff;letter-spacing:.01em}
+.jbPage{font-family:var(--display);font-size:clamp(10px,1.2vw,14px);letter-spacing:.22em;color:#8ea4c8}
+.jbGrid{flex:1;display:grid;grid-auto-rows:1fr;gap:7px;min-height:0}
+.jbCat{display:grid;place-items:center;text-align:center;padding:8px 6px;border-radius:3px;
+  background:linear-gradient(180deg,#24499f,#15306e);border:1px solid #3059b8;
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;line-height:1.12;
+  font-size:clamp(9px,.95vw,14px);color:#fff}
+.jbCell{display:grid;place-items:center;border-radius:3px;
+  background:linear-gradient(180deg,#16307c,#0d1d50);border:1px solid #2a4fae;
+  font-family:var(--display);font-size:clamp(18px,3vw,44px);color:var(--gold);
+  text-shadow:0 3px 0 rgba(0,0,0,.6);transition:transform .1s,filter .1s}
+.jbCell.pick{cursor:pointer}
+.jbCell.pick:hover{filter:brightness(1.35);transform:translateY(-2px)}
+.jbCell.used{background:#060a16;border-color:#101729;color:transparent;text-shadow:none;pointer-events:none}
+.jbClue{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(14px,2.6vh,30px);text-align:center;padding:clamp(18px,3vw,46px);border-radius:4px;
+  background:linear-gradient(180deg,#24499f,#0d1d50);border:1px solid #3059b8}
+.jbVal{font-family:var(--display);font-size:clamp(11px,1.3vw,17px);letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
+.jbQ{font-family:var(--display);font-size:clamp(17px,2.6vw,40px);line-height:1.28;color:#fff;max-width:17ch;max-width:min(1150px,92%)}
+.jbA{font-family:var(--display);font-style:italic;font-size:clamp(16px,2.2vw,34px);color:var(--gold);
+  border-top:1px solid rgba(255,255,255,.18);padding-top:clamp(10px,1.8vh,22px);max-width:min(1150px,92%)}
+.jbBar{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.jbDone{flex:1;display:grid;place-items:center;font-family:var(--display);font-style:italic;
+  font-size:clamp(20px,3vw,44px);color:var(--gold);text-align:center}
+
 /* ready banner */
 .ready{position:fixed;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none}
+.ready[hidden]{display:none}
 .ready .slash{width:140%;padding:14px 0 18px;text-align:center;transform:rotate(-5deg);
   background:linear-gradient(180deg,rgba(205,32,24,0) 0%,rgba(205,32,24,.94) 14%,rgba(150,18,12,.96) 86%,rgba(150,18,12,0) 100%);
   box-shadow:0 0 60px rgba(220,40,30,.55);border-top:2px solid rgba(255,190,60,.5);border-bottom:2px solid rgba(255,190,60,.5)}
@@ -218,18 +249,15 @@ body.gloved,body.gloved *{cursor:none}
 </div>
 
 <div class="gloves" id="gloves"></div>
+<div id="jeopardy"></div>
 <div class="ready" id="ready" hidden>
   <div class="slash"><h2>READY TO FIGHT</h2><p>THE ADVENTURE AWAITS</p></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 /* ==================================================================
    CONFIG — edit these three, then the roster below.
 ================================================================== */
-const SUPABASE_URL = "https://rrujjcarpdazwrdqcvmj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_SMzJlmZ0gP23nZM1zxlmTw_W3gyYm5B";
-const ADMIN_PASSWORD = "Dan";
 
 /* The party's opposition, shown after "vs" in the top banner. */
 const OPPOSITION = "Adventure";
@@ -255,11 +283,139 @@ const ROSTER = [
   { name:"Asta", series:"Black Clover" },     { name:"Mereoleona", series:"Black Clover" },
   { name:"Thorfinn", series:"Vinland Saga" }, { name:"Guts", series:"Berserk" },
   { name:"Inuyasha", series:"Inuyasha" },     { name:"Kenshin", series:"Rurouni Kenshin" },
+  { name:"Megumi", series:"Jujutsu Kaisen" }, { name:"Nobara", series:"Jujutsu Kaisen" },
+  { name:"Maki", series:"Jujutsu Kaisen" },   { name:"Aoi Todo", series:"Jujutsu Kaisen" },
+  { name:"Roy Mustang", series:"Fullmetal Alchemist" }, { name:"Scar", series:"Fullmetal Alchemist" },
+  { name:"Olivier", series:"Fullmetal Alchemist" },     { name:"Armin", series:"Attack on Titan" },
+  { name:"Annie", series:"Attack on Titan" },
 ];
 
 /* ================================================================== */
 
-const SLOT_COUNT = 4;
+
+/* ================= JEOPARDY =================
+   Three boards, six categories each, five clues per category.
+   `q` is what goes on screen when the cell is picked; `a` is what the
+   reveal shows. The grid is drawn from this array, so adding or cutting
+   a clue needs no other change. Non-ASCII characters are written as
+   \u escapes so this file stays plain ASCII. */
+const BOARDS = [
+{ title:`The Main Event`, cats:[
+  { name:`Fullmetal Alchemist`, clues:[
+    { v:200,  q:`This is the fundamental law of alchemy stating that to obtain something, something of equal value must be lost.`, a:`Equivalent Exchange` },
+    { v:400,  q:`Edward Elric lost his left leg during a failed attempt at human transmutation, and he sacrificed this limb to bind Alphonse's soul to a suit of armor.`, a:`His right arm` },
+    { v:600,  q:`This state alchemist, known as the "Flame Alchemist," uses gloves made of ignition cloth to create sparks.`, a:`Roy Mustang` },
+    { v:800,  q:`Named after the seven deadly sins, these artificial humans serve the main antagonist, Father.`, a:`Homunculi` },
+    { v:1000, q:`This crimson stone allows an alchemist to bypass the law of Equivalent Exchange, though its true ingredient is human souls.`, a:`The Philosopher's Stone` } ]},
+  { name:`Attack on Titan`, clues:[
+    { v:200,  q:`Humanity lives inside three concentric walls named Maria, Rose, and this innermost wall.`, a:`Wall Sina` },
+    { v:400,  q:`This military branch ventures outside the walls to reclaim territory and study the Titans, wearing the "Wings of Freedom" emblem.`, a:`Survey Corps / Scout Regiment` },
+    { v:600,  q:`Known as "Humanity's Strongest Soldier," this captain is famous for his obsession with cleanliness and his unique reverse-grip sword style.`, a:`Levi Ackerman` },
+    { v:800,  q:`Eren Yeager inherits both the Attack Titan and this powerful Titan from his father, Grisha.`, a:`The Founding Titan` },
+    { v:1000, q:`This island nation is where Eren, Mikasa, and Armin grow up, isolated from the rest of the world across the sea.`, a:`Paradis Island` } ]},
+  { name:`Jujutsu Kaisen`, clues:[
+    { v:200,  q:`Yuji Itadori becomes the vessel for the King of Curses after swallowing one of these rotting objects.`, a:`Ryomen Sukuna's finger` },
+    { v:400,  q:`Satoru Gojo possesses the Six Eyes and this inherited cursed technique that manipulates space at an atomic level.`, a:`Limitless` },
+    { v:600,  q:`Megumi Fushiguro uses hand shadows to summon shikigami through this inherited Zenin clan technique.`, a:`Ten Shadows Technique` },
+    { v:800,  q:`This supreme jujutsu technique traps a target inside a caster's innate environment, guaranteeing that all attacks hit.`, a:`Domain Expansion` },
+    { v:1000, q:`Before becoming a villain, this special-grade curse user was Satoru Gojo's best friend at Tokyo Jujutsu High.`, a:`Suguru Geto` } ]},
+  { name:`90s & 2000s Anime`, clues:[
+    { v:200,  q:`In Cowboy Bebop, Spike Spiegel and his crew travel through space aboard this titular ship hunting down bounties.`, a:`The Bebop` },
+    { v:400,  q:`In Death Note, Light Yagami finds a supernatural notebook dropped into the human world by this apple-loving Shinigami.`, a:`Ryuk` },
+    { v:600,  q:`In Yu Yu Hakusho, Yusuke Urameshi becomes a Spirit Detective after dying while saving a child from this.`, a:`A speeding car` },
+    { v:800,  q:`In Inuyasha, Kagome Higurashi travels back to the Sengoku period by falling down this family landmark.`, a:`The Bone-Eater's Well` },
+    { v:1000, q:`In Neon Genesis Evangelion, Shinji Ikari pilots this purple-and-green biomechanical mecha.`, a:`Evangelion Unit-01` } ]},
+  { name:`Pokémon`, clues:[
+    { v:200,  q:`Ash Ketchum's Pikachu refuses to evolve into this Pokémon, even when offered a Thunder Stone.`, a:`Raichu` },
+    { v:400,  q:`Jessie, James, and Meowth make up the recurring trio representing this villainous organization.`, a:`Team Rocket` },
+    { v:600,  q:`In the Kanto region, trainers must collect eight Gym Badges to challenge this elite group of four trainers and the Champion.`, a:`The Elite Four` },
+    { v:800,  q:`This Sleep Pokémon famously blocked Route 12 in the Kanto region until woken up by a Poké Flute.`, a:`Snorlax` },
+    { v:1000, q:`Created by scientists from the DNA of Mew, this Psychic-type Legendary Pokémon escaped from a lab on Cinnabar Island.`, a:`Mewtwo` } ]},
+  { name:`Anime Grab Bag`, clues:[
+    { v:200,  q:`In Naruto, this nine-tailed demon fox is sealed inside Naruto Uzumaki on the day of his birth.`, a:`Kurama` },
+    { v:400,  q:`In Dragon Ball Z, Goku first transforms into a Super Saiyan during his battle against this galactic tyrant on Planet Namek.`, a:`Frieza` },
+    { v:600,  q:`In My Hero Academia, Izuku Midoriya inherits this quirk from his idol, All Might.`, a:`One For All` },
+    { v:800,  q:`In Demon Slayer, Tanjiro Kamado becomes a demon slayer to find a cure for his younger sister, who was turned into a demon.`, a:`Nezuko` },
+    { v:1000, q:`In Hunter x Hunter, Gon Freecss takes the Hunter Exam in hopes of finding his absent father, who holds this title.`, a:`Double-Star Hunter / Ging Freecss` } ]} ]},
+
+{ title:`Deep Lore`, cats:[
+  { name:`Fullmetal Alchemist: Deep Lore`, clues:[
+    { v:200,  q:`Edward Elric engraved this exact date inside his silver State Alchemist pocket watch as a reminder of when they burned down their house.`, a:`October 3, 1911` },
+    { v:400,  q:`Before becoming the Homunculus Pride, this character lived under the guise of Fuhrer King Bradley's adopted son.`, a:`Selim Bradley` },
+    { v:600,  q:`Unlike Amestrian alchemy, which draws energy from tectonic shifts, Xingese alkahestry draws its power from this flow of life energy.`, a:`The Dragon's Pulse` },
+    { v:800,  q:`This Briggs fortress major general is the older sister of Alex Louis Armstrong and wields a treasured family saber.`, a:`Olivier Mira Armstrong` },
+    { v:1000, q:`In Fullmetal Alchemist: Brotherhood, Father's original name when he was a tiny shadow creature inside a glass flask was this.`, a:`The Dwarf in the Flask / Homunculus` } ]},
+  { name:`Attack on Titan: Deep Lore`, clues:[
+    { v:200,  q:`Eren Yeager activates the Coordinate's power for the first time after punching the Titan form of this royal-blooded woman who ate his mother.`, a:`Dina Fritz` },
+    { v:400,  q:`Because of the Curse of Ymir, anyone who inherits the power of one of the Nine Titans is doomed to die after this exact number of years.`, a:`13 years` },
+    { v:600,  q:`Levi Ackerman spent his youth living in this subterranean district beneath the capital before joining the Survey Corps.`, a:`The Underground City` },
+    { v:800,  q:`This Tybur family member reveals the true history of King Karl Fritz during a theatrical speech in Liberio before being eaten by Eren.`, a:`Willy Tybur` },
+    { v:1000, q:`The mysterious glowing creature that fused with Ymir Fritz to create the Founding Titan is scientifically referred to by fans and lore guides as this.`, a:`Hallucigenia / The Source of All Living Matter` } ]},
+  { name:`Jujutsu Kaisen: Deep Lore`, clues:[
+    { v:200,  q:`Toji Fushiguro used this special-grade cursed tool, shaped like a jagged dagger, to bypass Satoru Gojo's Infinity.`, a:`Inverted Spear of Heaven` },
+    { v:400,  q:`Sukuna's Domain Expansion, Malevolent Shrine, differs from almost all others because it lacks this standard structural feature.`, a:`A closed barrier` },
+    { v:600,  q:`This ancient sorcerer orchestrated the Culling Game by hopping bodies using a brain-transplanting cursed technique.`, a:`Kenjaku` },
+    { v:800,  q:`Hakari Kinji's Domain Expansion, Idle Death Gamble, is themed around this Japanese arcade-style slot game.`, a:`Pachinko` },
+    { v:1000, q:`Satoru Gojo and Ryomen Sukuna are both capable of hitting this spatial distortion—which multiplies cursed energy to the power of 2.5—within 0.000001 seconds of a physical strike.`, a:`Black Flash` } ]},
+  { name:`Anime Power Systems`, clues:[
+    { v:200,  q:`In Hunter x Hunter, Kurapika's chains are conjured using Nen, though his eyes turn scarlet to shift him into this rare sixth Nen category.`, a:`Specialist / Specialization` },
+    { v:400,  q:`In Bleach, a Soul Reaper's Zanpakuto has two release states: Shikai and this ultimate, final release.`, a:`Bankai` },
+    { v:600,  q:`In One Piece, this rare form of Haki—possessed by only one in several million people—allows the user to overpower the wills of others.`, a:`Conqueror's Haki / Haoshoku Haki` },
+    { v:800,  q:`In Chainsaw Man, devils grow stronger based on how much humanity fears their name, while hybrids like Denji fuse with devils through this organ.`, a:`The heart` },
+    { v:1000, q:`In JoJo's Bizarre Adventure, before Stands were introduced in Part 3, Jonathan and Joseph Joestar fought vampires using this sunlight-infused breathing technique.`, a:`Hamon / Ripple` } ]},
+  { name:`Mastermind Villains`, clues:[
+    { v:200,  q:`In Bleach, this former Captain of the 5th Division faked his own death before revealing his plot to overthrow the Soul Society.`, a:`Sosuke Aizen` },
+    { v:400,  q:`In Berserk, this leader of the Band of the Hawk sacrifices his comrades during the Eclipse to be reborn as Femto.`, a:`Griffith` },
+    { v:600,  q:`In Monster, Dr. Kenzo Tenma risks his career to save the life of this young boy, who grows up to become a manipulative serial killer.`, a:`Johan Liebert` },
+    { v:800,  q:`In Code Geass, Lelouch's childhood friend Suzaku Kururugi pilots this white prototype Knightmare Frame.`, a:`Lancelot` },
+    { v:1000, q:`In Hunter x Hunter, this Chimera Ant King develops a deep bond with blind Gungi champion Komugi before dying of radiation poisoning.`, a:`Meruem` } ]},
+  { name:`Studio & Director Signatures`, clues:[
+    { v:200,  q:`This co-founder of Studio Ghibli directed Spirited Away, Princess Mononoke, and The Boy and the Heron.`, a:`Hayao Miyazaki` },
+    { v:400,  q:`Famous for editing techniques that blur reality and dreams, this late director created Paprika, Perfect Blue, and Paranoia Agent.`, a:`Satoshi Kon` },
+    { v:600,  q:`This studio animated Attack on Titan Seasons 1–3 before MAPPA took over for the Final Season.`, a:`Wit Studio` },
+    { v:800,  q:`Shinichiro Watanabe directed both Cowboy Bebop and this hip-hop-infused Edo-period samurai anime.`, a:`Samurai Champloo` },
+    { v:1000, q:`Studio Trigger, founded by former Gainax animators, is famous for Kill la Kill and this 2022 Netflix video game adaptation.`, a:`Cyberpunk: Edgerunners` } ]} ]},
+
+{ title:`Expert Mode`, cats:[
+  { name:`Fullmetal Alchemist: Obscure Details`, clues:[
+    { v:200,  q:`Maes Hughes was murdered by Envy while disguised as this close friend and subordinate of Hughes.`, a:`Maria Ross` },
+    { v:400,  q:`Hohenheim gained immortality when Xerxes was transmuted into a Philosopher's Stone, sharing half the souls with Father and becoming this exact slave number.`, a:`Slave Number 23` },
+    { v:600,  q:`Roy Mustang's trusted lieutenant Riza Hawkeye has the secret of Flame Alchemy tattooed on this part of her body.`, a:`Her back` },
+    { v:800,  q:`This Homunculus, representing the sin of Sloth in Brotherhood, spent years digging a massive nationwide transmutation circle underground.`, a:`Sloth` },
+    { v:1000, q:`After losing his Alchemy at the end of Brotherhood, Edward Elric travels west while Alphonse travels east to study alkahestry in this country.`, a:`Xing` } ]},
+  { name:`Attack on Titan: Obscure Details`, clues:[
+    { v:200,  q:`Kenny Ackerman was the ruthless leader of the Anti-Personnel Control Squad and shared this familial relationship with Levi.`, a:`His uncle` },
+    { v:400,  q:`Reiner Braun, Bertholdt Hoover, and Annie Leonhart originally infiltrated Wall Maria alongside this fourth Warrior who was eaten by Ymir.`, a:`Marcel Galliard` },
+    { v:600,  q:`Before inheriting the Attack Titan from Grisha, Eren Kruger used this undercover alias while working inside Marley's Public Security Authorities.`, a:`The Owl` },
+    { v:800,  q:`The Marleyan military unit composed of Eldian candidates fighting for Honorary Marleyan status wears armbands of this color before inheriting a Titan.`, a:`Yellow` },
+    { v:1000, q:`Mikasa Ackerman's clan originally came to Paradis Island from this eastern nation allied with the Tybur family.`, a:`Hizuru` } ]},
+  { name:`Jujutsu Kaisen: Obscure Details`, clues:[
+    { v:200,  q:`Megumi Fushiguro's untamed shikigami, summoned as a last resort in Shibuya, is named Eight-Handled Sword Divergent Sila Divine General…`, a:`Mahoraga` },
+    { v:400,  q:`Yuta Okkotsu's immense cursed energy originally stemmed from accidentally cursing this childhood friend after she died in a car crash.`, a:`Rika Orimoto` },
+    { v:600,  q:`Choso is the oldest of three hybrid Curse-Human siblings created by Noritoshi Kamo, collectively known as these numbered objects.`, a:`Death Painting Wombs` },
+    { v:800,  q:`Yuki Tsukumo's innate cursed technique, Star Rage, allows her to add this imaginary property to herself and her shikigami Garuda.`, a:`Virtual mass` },
+    { v:1000, q:`During the Shibuya Incident, Satoru Gojo is sealed inside this special-grade cursed object after seeing Kenjaku in Geto's body.`, a:`Prison Realm` } ]},
+  { name:`Dark Fantasy & Seinen`, clues:[
+    { v:200,  q:`In Berserk, Guts wields a massive slab of iron known by this dramatic moniker.`, a:`Dragonslayer` },
+    { v:400,  q:`In Vinland Saga, Thorfinn's pacifist philosophy ("I have no enemies") comes directly from his late father, who held this legendary nickname.`, a:`Thors the Troll` },
+    { v:600,  q:`In Tokyo Ghoul, Ken Kaneki's hair turns white after days of brutal torture by this Aogiri Tree executive, also known as Yamori.`, a:`Jason / Yakumo Oomori` },
+    { v:800,  q:`In Made in Abyss, ascending from the 6th Layer of the Abyss inflicts a curse causing loss of humanity or death, known as the Curse of this.`, a:`The Sixth Layer / The Capital of the Unreturned` },
+    { v:1000, q:`In Dorohedoro, Caiman searches for the sorcerer who cursed him with the head of this animal.`, a:`A reptile / lizard / caiman` } ]},
+  { name:`2010s–2020s Modern Hits`, clues:[
+    { v:200,  q:`In Mob Psycho 100, Shigeo Kageyama works part-time for this con-artist "spirit medium" who relies on salt splashes and massages.`, a:`Arataka Reigen` },
+    { v:400,  q:`In Frieren: Beyond Journey's End, Frieren's apprentice Fern was originally raised by this corrupt priest from the Hero's Party.`, a:`Heiter` },
+    { v:600,  q:`In Steins;Gate, Rintaro Okabe sends text messages back in time using a modified microwave called the PhoneWave, calling those messages this.`, a:`D-Mails` },
+    { v:800,  q:`In Spy x Family, Loid Forger's real spy codename is Twilight, while Yor Forger operates as an assassin under this alias.`, a:`Thorn Princess` },
+    { v:1000, q:`In Dandadan, Okarun loses his family jewels after being cursed by this high-speed urban legend yokai.`, a:`Turbo Granny` } ]},
+  { name:`Anime Weapons & Artifacts`, clues:[
+    { v:200,  q:`In Inuyasha, Inuyasha's fang-forged sword capable of slaying a hundred demons in one swing is named this.`, a:`Tessaiga` },
+    { v:400,  q:`In Kill la Kill, Ryuko Matoi's sentient sailor uniform feeds on her blood and transforms into Life Fiber Synchronize under this name.`, a:`Senketsu` },
+    { v:600,  q:`In Fate/stay night, Saber's invisible sword is actually this legendary Arthurian blade concealed by wind magic.`, a:`Excalibur` },
+    { v:800,  q:`In Soul Eater, Maka Albarn's scythe partner, Soul Eater Evans, transforms into a Death Scythe after consuming 99 Kishin eggs and one soul of this type.`, a:`A witch's soul` },
+    { v:1000, q:`In Akira, the psychic energy of Tetsuo and Akira is contained at zero Kelvin beneath the Olympic Stadium in this titular city.`, a:`Neo-Tokyo` } ]} ]},
+];
+
+const SLOT_COUNT = 3;
 const SLOT_VARS = ["--p1","--p2","--p3","--p4"];
 const SLOT_HEX  = ["#C0392B","#2E5FA3","#D9A800","#27953F"];
 
@@ -274,9 +430,37 @@ const myId  = stored("elViewerId",()=>"v-"+Math.random().toString(36).slice(2,10
 const tabId = "t-"+Math.random().toString(36).slice(2,10);   // this page load only
 
 let ROLE=null, myName="", slots={}, adminLock=false, seatFull=false;
-let peers=[], hotTarget=null, sb=null, handsCh=null, ready=false;
+let myPw="";                                  // typed once, sent on hello, never checked here
+let peers=[], hotTarget=null, ws=null, live=false;
+
+/* Jeopardy state. One object, mirrored into board.game so every screen
+   (players, the OBS viewer, a page reloaded mid-show) lands on the same
+   view. used holds "page-cat-row" keys and is never cleared by Clear
+   board, so wiping the seats mid-show does not lose trivia progress. */
+let game = { started:false, page:0, open:null, revealed:false, used:[] };
+const gameKey = (p,c,r) => p+"-"+c+"-"+r;
+const isUsed  = (p,c,r) => game.used.indexOf(gameKey(p,c,r))>=0;
+const curBoard = () => BOARDS[Math.max(0,Math.min(game.page,BOARDS.length-1))];
+const clueCount = b => b.cats.reduce((t,c)=>t+c.clues.length,0);
+function usedOnPage(used,page){
+  const b=BOARDS[Math.max(0,Math.min(page,BOARDS.length-1))]; let n=0;
+  for(let c=0;c<b.cats.length;c++) for(let r=0;r<b.cats[c].clues.length;r++)
+    if(used.indexOf(gameKey(page,c,r))>=0) n++;
+  return n;
+}
+function applyGame(g){
+  if(!g || typeof g!=="object") return;
+  game = {
+    started: !!g.started,
+    page: Number(g.page)||0,
+    open: (g.open && typeof g.open.c==="number" && typeof g.open.r==="number") ? { c:g.open.c, r:g.open.r } : null,
+    revealed: !!g.revealed,
+    used: Array.isArray(g.used) ? g.used.slice() : [],
+  };
+}
 
 const CAN_PLAY = () => ROLE==="player" || ROLE==="admin";
+const CAN_SEAT = () => ROLE==="player";                    // the admin hosts; they take no slot
 const seatOf = n => { const s=slots[String(n)]; return s && s.viewer_id ? s : null; };
 const mySlot = () => { for(let n=1;n<=SLOT_COUNT;n++){const s=seatOf(n);if(s&&s.viewer_id===myId)return n;} return null; };
 const charIn = n => { const s=seatOf(n); return s&&s.character_id&&!s.held ? BY_ID.get(s.character_id) : null; };
@@ -299,51 +483,59 @@ function allPlaced(){
   }
   return claimed>0;
 }
-const bannerOn = () => allPlaced() || adminLock;
+const bannerOn = () => !game.started && (allPlaced() || adminLock);
 
-/* ---------- writes (Supabase) ---------- */
-async function pushSeat(n, patch){
+/* ---------- writes (every one goes to the server) ---------- */
+function pushSeat(n, patch){
   const cur = slots[String(n)] || {};
-  const row = { ...cur, ...patch, seat:n, viewer_id:myId, updated_at:new Date().toISOString() };
-  slots[String(n)] = row; render();                       // optimistic
-  if(!sb) return;
-  const { error } = await sb.from("seats").upsert(row, { onConflict:"seat" });
-  if(error) console.warn("seat write", error.message);
+  slots[String(n)] = { ...cur, ...patch, seat:n, viewer_id:myId };   // optimistic
+  render();
+  sendMsg({ t:"seat", patch });
 }
-async function dropSeat(n){
-  delete slots[String(n)]; if(carrying()===n) {} render();
-  if(!sb) return;
-  const { error } = await sb.from("seats").delete().eq("seat", n);
-  if(error) console.warn("seat clear", error.message);
-}
-async function setAdminLock(v){
+function setAdminLock(v){
   adminLock=v; render();
-  if(!sb) return;
-  const { error } = await sb.from("board").update({ locked:v, updated_at:new Date().toISOString() }).eq("id",1);
-  if(error) console.warn("lock", error.message);
+  sendMsg({ t:"lock", v });
 }
-async function clearBoard(){
+function pushGame(patch){
+  game = { ...game, ...patch }; render();
+  sendMsg({ t:"game", patch });
+}
+function startGame(){   if(ROLE!=="admin") return; pushGame({ started:true,  open:null, revealed:false }); }
+function backToSelect(){ if(ROLE!=="admin") return; pushGame({ started:false, open:null, revealed:false }); }
+function openClue(c,r){
+  if(ROLE!=="admin" || game.open || isUsed(game.page,c,r)) return;
+  pushGame({ open:{c,r}, revealed:false });
+}
+function revealClue(){ if(ROLE!=="admin" || !game.open) return; pushGame({ revealed:true }); }
+/* Marks the clue done and goes back to the grid. Clearing the last cell
+   on a board moves straight to the next one, so the night flows
+   board 1 -> board 2 -> board 3 without an extra click. */
+function nextClue(){
+  if(ROLE!=="admin" || !game.open) return;
+  const k = gameKey(game.page, game.open.c, game.open.r);
+  const used = game.used.indexOf(k)>=0 ? game.used : game.used.concat([k]);
+  const patch = { used, open:null, revealed:false };
+  if(usedOnPage(used,game.page) >= clueCount(curBoard()) && game.page < BOARDS.length-1)
+    patch.page = game.page+1;
+  pushGame(patch);
+}
+function nextPage(){
+  if(ROLE!=="admin" || game.page >= BOARDS.length-1) return;
+  pushGame({ page:game.page+1, open:null, revealed:false });
+}
+function clearBoard(){
   if(ROLE!=="admin") return;
-  slots={}; adminLock=false; seatFull=false; render();
-  if(!sb) return;
-  await sb.from("seats").delete().gte("seat",1);
-  await sb.from("board").update({ locked:false, updated_at:new Date().toISOString() }).eq("id",1);
+  slots={}; adminLock=false; seatFull=false;
+  game = { ...game, started:false, open:null, revealed:false };
+  render();
+  sendMsg({ t:"clear" });
 }
 
-/* Claim the lowest free seat. `seat` is the primary key, so a concurrent
-   insert for the same seat is rejected by the database itself -- first write
-   wins, no lease or lock needed. */
-async function autoSeat(){
-  if(!CAN_PLAY() || mySlot()!==null) return;
-  for(let n=1;n<=SLOT_COUNT;n++){
-    if(seatOf(n)) continue;
-    const row = { seat:n, viewer_id:myId, player_name:myName, character_id:"", held:false, px:0.5, py:0.32 };
-    if(!sb){ slots[String(n)]=row; render(); return; }
-    const { error } = await sb.from("seats").insert(row);
-    if(!error){ slots[String(n)]=row; render(); return; }
-    if(error.code !== "23505") console.warn("seat", n, error.message);  // 23505 = taken
-  }
-  seatFull=true; render();
+/* The server picks the lowest free seat under one lock and answers with the
+   whole room, so there is no race to resolve here and no retry loop. */
+function autoSeat(){
+  if(!CAN_SEAT() || mySlot()!==null) return;
+  sendMsg({ t:"claim" });
 }
 
 /* ---------- puck actions ---------- */
@@ -352,6 +544,7 @@ function placeOnTile(cid,px,py){ const n=carrying(); if(n===null) return; pushSe
 function placeBackOnSeat(){ const n=carrying(); if(n===null) return; pushSeat(n,{ character_id:"", held:false }); }
 
 function onWorldPress(ev){
+  if(game.started) return;                  // the jeopardy board owns the screen
   if(!CAN_PLAY()||adminLock) return;
   const tileEl = ev.target.closest && ev.target.closest("[data-char]");
   const slotEl = ev.target.closest && ev.target.closest("[data-seat]");
@@ -381,6 +574,17 @@ function puckEl(n,big){
   d.textContent="P"+n;
   return d;
 }
+/* Portrait loader. With no img on the roster entry this tries images/<slug>.png,
+   then .jpg, and leaves the placeholder in place if neither is there. */
+function portraitInto(c, onLoad){
+  const id=slug(c.name);
+  const srcs = c.img ? [c.img] : ["images/"+id+".png","images/"+id+".jpg"];
+  let k=0;
+  const i=document.createElement("img"); i.alt="";
+  i.addEventListener("load",()=>onLoad(i));
+  i.addEventListener("error",()=>{ if(++k<srcs.length) i.src=srcs[k]; });
+  i.src=srcs[0];
+}
 function renderRoster(){
   const host=document.getElementById("roster"); host.replaceChildren();
   for(const c of ROSTER){
@@ -390,8 +594,8 @@ function renderRoster(){
     tile.dataset.char=id;
     tile.title=c.series?`${c.name} — ${c.series}`:c.name;
     const art=document.createElement("div"); art.className="art"; washFor(art,c.name);
-    if(c.img){const i=document.createElement("img");i.src=c.img;i.alt="";art.appendChild(i);}
-    else{const v=document.createElement("div");v.className="initials";v.textContent=initialsFor(c.name);art.appendChild(v);}
+    const v=document.createElement("div");v.className="initials";v.textContent=initialsFor(c.name);art.appendChild(v);
+    portraitInto(c, i=>{ v.remove(); art.appendChild(i); });
     tile.appendChild(art);
     const on=pucksOn(id);
     if(on.length){
@@ -414,8 +618,8 @@ function renderSlots(){
   for(let n=1;n<=SLOT_COUNT;n++) if(seatOf(n)) joined.push(n);
   if(!joined.length){
     const w=document.createElement("div"); w.className="waiting";
-    w.textContent = seatFull ? "All four seats are taken."
-      : CAN_PLAY() ? "Taking your seat…" : "Waiting for players to join…";
+    w.textContent = seatFull ? `All ${SLOT_COUNT} seats are taken.`
+      : CAN_SEAT() ? "Taking your seat…" : "Waiting for players to join…";
     host.appendChild(w); return;
   }
   for(const n of joined){
@@ -435,8 +639,8 @@ function renderSlots(){
     const art=document.createElement("div"); art.className="art";
     if(c){
       const p=document.createElement("div"); p.className="portrait"; washFor(p,c.name);
-      if(c.img){const i=document.createElement("img");i.src=c.img;i.alt="";p.appendChild(i);}
-      else p.textContent=initialsFor(c.name);
+      p.textContent=initialsFor(c.name);
+      portraitInto(c, i=>{ p.textContent=""; p.appendChild(i); });
       art.appendChild(p);
     }else{
       const e=document.createElement("div"); e.className="empty";
@@ -472,16 +676,16 @@ function renderFooter(){
   if(ROLE==="viewer") return;                 // the broadcast source carries no chrome
 
   const tag=document.createElement("span");
-  const bits=[]; if(sb) bits.push("SYNC"); if(ready) bits.push("HANDS");
-  tag.className="roleTag"+(bits.length===2?" live":"");
-  tag.textContent=(ROLE||"").toUpperCase()+" · "+(bits.length?bits.join(" + "):"OFFLINE");
+  tag.className="roleTag"+(live?" live":"");
+  tag.textContent=(ROLE||"").toUpperCase()+" · "+(live?"LIVE":"OFFLINE");
   host.appendChild(tag);
 
   const hint=document.createElement("span"); hint.className="hint";
   const held=carrying();
   hint.textContent = adminLock ? "Board locked by the host."
     : held!==null ? "Carrying your puck — click a fighter to place it."
-    : seatFull ? "All four seats are taken — watching."
+    : seatFull ? `All ${SLOT_COUNT} seats are taken — watching.`
+    : !CAN_SEAT() ? "Hosting the board. No seat, no puck; your glove still points."
     : mySlot()===null ? "Taking your seat…"
     : charIn(mySlot()) ? "Placed. Click your puck again to move it."
     : "Click your puck to pick it up.";
@@ -496,13 +700,83 @@ function renderFooter(){
     w.className="startBtn wipe"; w.type="button"; w.textContent="Clear board";
     w.title="Free every seat";
     w.addEventListener("click",e=>{e.stopPropagation();clearBoard();});
-    host.append(b,w);
+    const g=document.createElement("button");
+    g.className="startBtn"; g.type="button"; g.textContent="Start the game";
+    g.title="Moves every screen to the jeopardy board";
+    g.addEventListener("click",e=>{e.stopPropagation();startGame();});
+    host.append(b,w,g);
+  }
+}
+function jbBtn(label,fn,cls){
+  const b=document.createElement("button"); b.type="button";
+  b.className="startBtn"+(cls?" "+cls:""); b.textContent=label;
+  b.addEventListener("click",e=>{ e.stopPropagation(); fn(); });
+  return b;
+}
+function renderJeopardy(){
+  const host=document.getElementById("jeopardy");
+  host.classList.toggle("on", !!game.started);
+  host.replaceChildren();
+  if(!game.started) return;
+  const b=curBoard(), isAdmin=ROLE==="admin";
+
+  const head=document.createElement("div"); head.className="jbHead";
+  const t=document.createElement("span"); t.className="jbTitle"; t.textContent=b.title;
+  const p=document.createElement("span"); p.className="jbPage";
+  p.textContent="Board "+(game.page+1)+" of "+BOARDS.length;
+  head.append(t,p); host.appendChild(head);
+
+  if(game.open){
+    const cat=b.cats[game.open.c], cl=cat && cat.clues[game.open.r];
+    const panel=document.createElement("div"); panel.className="jbClue";
+    const v=document.createElement("div"); v.className="jbVal";
+    v.textContent=(cat?cat.name:"")+"  •  $"+(cl?cl.v:0);
+    const q=document.createElement("div"); q.className="jbQ"; q.textContent=cl?cl.q:"";
+    panel.append(v,q);
+    if(game.revealed){
+      const a=document.createElement("div"); a.className="jbA"; a.textContent=cl?cl.a:"";
+      panel.appendChild(a);
+    }
+    host.appendChild(panel);
+  } else if(usedOnPage(game.used,game.page) >= clueCount(b)){
+    const d=document.createElement("div"); d.className="jbDone";
+    d.textContent="Board clear";
+    host.appendChild(d);
+  } else {
+    const grid=document.createElement("div"); grid.className="jbGrid";
+    grid.style.gridTemplateColumns="repeat("+b.cats.length+",1fr)";
+    for(const c of b.cats){
+      const h=document.createElement("div"); h.className="jbCat"; h.textContent=c.name;
+      grid.appendChild(h);
+    }
+    const rows=b.cats.reduce((m,c)=>Math.max(m,c.clues.length),0);
+    for(let r=0;r<rows;r++) for(let ci=0;ci<b.cats.length;ci++){
+      const cl=b.cats[ci].clues[r], used=isUsed(game.page,ci,r);
+      const cell=document.createElement("div");
+      cell.className="jbCell"+(used?" used":(isAdmin&&cl?" pick":""));
+      cell.textContent=cl?("$"+cl.v):"";
+      if(cl && !used && isAdmin) cell.addEventListener("click",()=>openClue(ci,r));
+      grid.appendChild(cell);
+    }
+    host.appendChild(grid);
+  }
+
+  if(isAdmin){
+    const bar=document.createElement("div"); bar.className="jbBar";
+    if(game.open){
+      if(!game.revealed) bar.appendChild(jbBtn("Show answer",revealClue));
+      bar.appendChild(jbBtn("Next",nextClue));
+    }else{
+      if(game.page < BOARDS.length-1) bar.appendChild(jbBtn("Next board",nextPage));
+      bar.appendChild(jbBtn("Back to party select",backToSelect,"wipe"));
+    }
+    host.appendChild(bar);
   }
 }
 function render(){
   if(!ROLE) return;
   document.getElementById("ready").hidden = !bannerOn();
-  renderRoster(); renderSlots(); renderBanner(); renderFooter(); renderGloves();
+  renderRoster(); renderSlots(); renderBanner(); renderFooter(); renderGloves(); renderJeopardy();
 }
 
 /* ---------- gloves ---------- */
@@ -598,7 +872,7 @@ const goBtn=document.getElementById("go");
 const pwRow=document.getElementById("pwRow");
 const pwIn=document.getElementById("pw");
 const pwMsg=document.getElementById("pwMsg");
-const pwOk=()=>pwIn.value.trim().toLowerCase()===ADMIN_PASSWORD.toLowerCase();
+const pwOk=()=>pwIn.value.trim().length>0;   // the server is the judge now
 let pickedRole=null;
 
 const escape=document.createElement("button");
@@ -631,26 +905,43 @@ function refreshGo(){
   goBtn.disabled = !pickedRole || needsName || needsPw;
 }
 
+/* An admin the server turned away lands back here with the box open, rather
+   than on a board full of buttons that quietly do nothing. */
+let pwDenied=false;
+try{ pwDenied = sessionStorage.getItem("elPwBad")==="1"; sessionStorage.removeItem("elPwBad"); }catch(e){}
+if(pwDenied){
+  pickedRole="admin";
+  document.querySelectorAll(".roleBtn").forEach(o=>o.classList.toggle("sel",o.dataset.role==="admin"));
+  nameIn.value=stored("elName")||"";
+  pwRow.hidden=false; pwMsg.hidden=false; refreshGo(); pwIn.focus();
+}
+
 const savedRole = stored("elRole");
-if(savedRole==="player"||savedRole==="viewer"||savedRole==="admin"){
-  pickedRole=savedRole; nameIn.value=stored("elName")||""; enter();
+if(!pwDenied && (savedRole==="player"||savedRole==="viewer"||savedRole==="admin")){
+  pickedRole=savedRole; nameIn.value=stored("elName")||"";
+  myPw = stored("elAdminPw")||"";              // so a reload mid-show does not re-prompt
+  enter();
 }
 
 let presenceTimer=0;
 function enter(){
   ROLE=pickedRole; myName=nameIn.value.trim();
-  try{ localStorage.setItem("elName",myName); localStorage.setItem("elRole",ROLE); }catch(e){}
+  if(ROLE==="admin" && pwIn.value.trim()) myPw=pwIn.value.trim();
+  try{
+    localStorage.setItem("elName",myName); localStorage.setItem("elRole",ROLE);
+    if(ROLE==="admin") localStorage.setItem("elAdminPw",myPw);
+  }catch(e){}
   joinEl.remove();
   if(CAN_PLAY()) document.body.classList.add("gloved");
 
   window.addEventListener("pointermove",e=>{
     myPos={x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight};
     updateHot(e); renderGloves();
-    if(handsCh && ready && CAN_PLAY() && !presenceTimer){
-      // coalesce to ~25/s; Realtime rate-limits per client
+    if(live && CAN_PLAY() && !presenceTimer){
+      // coalesce to ~25/s; every move is relayed, never stored
       presenceTimer=setTimeout(()=>{
         presenceTimer=0;
-        handsCh.track({ x:myPos.x, y:myPos.y, pose:myPose(), slot:mySlot(), name:myName, tab:tabId });
+        sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:myPose(), slot:mySlot(), name:myName });
       },40);
     }
   },{passive:true});
@@ -660,50 +951,74 @@ function enter(){
   connect();
 }
 
-/* ---------- Supabase ---------- */
-async function connect(){
-  if(!window.supabase){ console.warn("supabase-js failed to load"); renderFooter(); return; }
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    realtime:{ params:{ eventsPerSecond: 30 } }
+/* ---------- sync ----------
+   One socket back to whatever served this page, so the tunnel needs a single
+   ingress rule and there is no cloud account in the path. The server holds the
+   room; this page holds a copy and redraws whenever a new one arrives. */
+function wsUrl(){
+  return (location.protocol==="https:" ? "wss://" : "ws://") + location.host;
+}
+function sendMsg(o){
+  if(ws && ws.readyState===1){ ws.send(JSON.stringify(o)); return true; }
+  return false;
+}
+function applyRoom(r){
+  if(!r || typeof r!=="object") return;
+  slots = (r.seats && typeof r.seats==="object") ? r.seats : {};
+  adminLock = !!r.locked;
+  applyGame(r.game);
+  if(mySlot()!==null) seatFull=false;          // a seat opened up and it is ours
+}
+function onHand(h){
+  if(h.tab===tabId) return;
+  const i=peers.findIndex(p=>p.tab===h.tab);
+  if(i>=0) peers[i]=h; else peers.push(h);
+  renderGloves();
+}
+function onGone(tab){
+  const i=peers.findIndex(p=>p.tab===tab);
+  if(i>=0){ peers.splice(i,1); renderGloves(); }
+}
+
+/* Reconnect with backoff. Supabase gave this for free; without it an OBS
+   source that drops its socket is dead for the rest of the night. */
+let backoff=500;
+function retry(){
+  const wait=Math.round(backoff*(0.7+Math.random()*0.6));
+  backoff=Math.min(5000,backoff*2);
+  setTimeout(connect,wait);
+}
+function connect(){
+  let sock;
+  try{ sock=new WebSocket(wsUrl()); }catch(e){ return retry(); }
+  ws=sock;
+  sock.addEventListener("open",()=>{
+    backoff=500; live=true;
+    sendMsg({ t:"hello", viewerId:myId, name:myName, role:ROLE, tabId, pw:myPw });
+    if(CAN_SEAT()) sendMsg({ t:"claim" });
+    if(CAN_PLAY()) sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:"open", slot:null, name:myName });
+    renderFooter();
   });
-
-  // initial state
-  const [{ data:seatRows }, { data:boardRow }] = await Promise.all([
-    sb.from("seats").select("*"),
-    sb.from("board").select("locked").eq("id",1).maybeSingle(),
-  ]);
-  slots={}; (seatRows||[]).forEach(r=>{ slots[String(r.seat)]=r; });
-  adminLock = !!(boardRow && boardRow.locked);
-  render();
-
-  // live table changes
-  sb.channel("board-sync")
-    .on("postgres_changes",{event:"*",schema:"public",table:"seats"},p=>{
-      if(p.eventType==="DELETE"){ const k=String((p.old&&p.old.seat)??""); if(k) delete slots[k]; }
-      else if(p.new){ slots[String(p.new.seat)] = p.new; }
-      render();
-    })
-    .on("postgres_changes",{event:"*",schema:"public",table:"board"},p=>{
-      if(p.new) adminLock = !!p.new.locked;
-      render();
-    })
-    .subscribe();
-
-  // live hands
-  handsCh = sb.channel("hands", { config:{ presence:{ key: tabId } } });
-  handsCh.on("presence",{event:"sync"},()=>{
-    const state = handsCh.presenceState();
-    peers = Object.values(state).flat();
-    renderGloves();
+  sock.addEventListener("message",ev=>{
+    let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    if(m.t==="state"){ applyRoom(m.room); render(); }
+    else if(m.t==="hand"){ onHand(m); }
+    else if(m.t==="gone"){ onGone(m.tab); }
+    else if(m.t==="full"){ seatFull=true; render(); }
+    else if(m.t==="denied"){
+      try{
+        localStorage.removeItem("elRole"); localStorage.removeItem("elAdminPw");
+        sessionStorage.setItem("elPwBad","1");
+      }catch(e){}
+      location.reload();
+    }
   });
-  handsCh.subscribe(async status=>{
-    if(status!=="SUBSCRIBED") return;
-    ready=true; renderFooter();
-    if(CAN_PLAY()) await handsCh.track({ x:myPos.x, y:myPos.y, pose:"open", slot:null, name:myName, tab:tabId });
+  sock.addEventListener("close",()=>{
+    if(ws!==sock) return;                       // a stale socket losing a race
+    ws=null; live=false; peers=[];
+    renderGloves(); renderFooter(); retry();
   });
-
-  renderFooter();
-  setTimeout(autoSeat, 500);
+  sock.addEventListener("error",()=>{ try{ sock.close(); }catch(e){} });
 }
 </script>
 </body>
