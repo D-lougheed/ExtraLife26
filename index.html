@@ -171,10 +171,15 @@ body.gloved,body.gloved *{cursor:none}
   background:linear-gradient(180deg,#24499f,#15306e);border:1px solid #3059b8;
   font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;line-height:1.12;
   font-size:clamp(9px,.95vw,14px);color:#fff}
-.jbCell{display:grid;place-items:center;border-radius:3px;
+.jbCell{display:grid;place-items:center;align-content:center;border-radius:3px;
   background:linear-gradient(180deg,#16307c,#0d1d50);border:1px solid #2a4fae;
-  font-family:var(--display);font-size:clamp(18px,3vw,44px);color:var(--gold);
+  font-family:var(--display);font-size:clamp(18px,min(3vw,14vh - 36px),44px);line-height:1;color:var(--gold);
   text-shadow:0 3px 0 rgba(0,0,0,.6);transition:transform .1s,filter .1s}
+/* The small FOCUS label under each cell's number. The 14vh term above only
+   bites on short screens (landscape phones), so seven rows still fit. */
+.jbFocus{font-size:clamp(8px,.72vw,13px);letter-spacing:.22em;padding-left:.22em;margin-top:.3em;
+  text-transform:uppercase;text-shadow:0 2px 0 rgba(0,0,0,.6)}
+.jbCell.used .jbFocus{text-shadow:none}
 .jbCell.pick{cursor:pointer}
 .jbCell.pick:hover{filter:brightness(1.35);transform:translateY(-2px)}
 .jbCell.used{background:#060a16;border-color:#101729;color:transparent;text-shadow:none;pointer-events:none}
@@ -338,125 +343,144 @@ const ROSTER = [
 
 
 /* ================= JEOPARDY =================
-   Three boards, six categories each, five clues per category.
-   `q` is what goes on screen when the cell is picked; `a` is what the
+   Three boards, six categories each, six clues per category. `v` is the
+   clue's Focus, 1-6 from the top row down; the cell shows it as the big
+   number. `q` is what goes on screen when the cell is picked; `a` is what the
    reveal shows. The grid is drawn from this array, so adding or cutting
    a clue needs no other change. Non-ASCII characters are written as
    \u escapes so this file stays plain ASCII. */
 const BOARDS = [
 { title:`The Main Event`, cats:[
   { name:`Fullmetal Alchemist`, clues:[
-    { v:200,  q:`This is the fundamental law of alchemy stating that to obtain something, something of equal value must be lost.`, a:`Equivalent Exchange` },
-    { v:400,  q:`Edward Elric lost his left leg during a failed attempt at human transmutation, and he sacrificed this limb to bind Alphonse's soul to a suit of armor.`, a:`His right arm` },
-    { v:600,  q:`This state alchemist, known as the "Flame Alchemist," uses gloves made of ignition cloth to create sparks.`, a:`Roy Mustang` },
-    { v:800,  q:`Named after the seven deadly sins, these artificial humans serve the main antagonist, Father.`, a:`Homunculi` },
-    { v:1000, q:`This crimson stone allows an alchemist to bypass the law of Equivalent Exchange, though its true ingredient is human souls.`, a:`The Philosopher's Stone` } ]},
+    { v:1, q:`This little girl, daughter of the 'Sewing-Life Alchemist', was transmuted together with the family dog Alexander into a talking chimera.`, a:`Nina / Nina Tucker` },
+    { v:2, q:`The Elrics' alchemy teacher, who introduces herself as 'just a housewife', lost some of her organs trying to bring back her stillborn baby.`, a:`Izumi Curtis` },
+    { v:3, q:`In Brotherhood, this Xingese prince hunting for immortality willingly lets the homunculus Greed take over his body.`, a:`Ling Yao` },
+    { v:4, q:`This 'Crimson Alchemist', a veteran of the Ishval war, has transmutation circles tattooed on his palms and turns whatever he touches into a bomb.`, a:`Solf J. Kimblee / Kimblee` },
+    { v:5, q:`Early on, Ed and Al expose Father Cornello, a fake prophet of the sun god Leto, in this town.`, a:`Liore (Brotherhood/manga) / Lior (2003 anime) / Reole` },
+    { v:6, q:`Brotherhood's anime-only first episode pits the Elrics against this rogue 'Freezing Alchemist', an Ishval veteran who tries to ice over Central City.`, a:`Isaac McDougal` } ]},
   { name:`Attack on Titan`, clues:[
-    { v:200,  q:`Humanity lives inside three concentric walls named Maria, Rose, and this innermost wall.`, a:`Wall Sina` },
-    { v:400,  q:`This military branch ventures outside the walls to reclaim territory and study the Titans, wearing the "Wings of Freedom" emblem.`, a:`Survey Corps / Scout Regiment` },
-    { v:600,  q:`Known as "Humanity's Strongest Soldier," this captain is famous for his obsession with cleanliness and his unique reverse-grip sword style.`, a:`Levi Ackerman` },
-    { v:800,  q:`Eren Yeager inherits both the Attack Titan and this powerful Titan from his father, Grisha.`, a:`The Founding Titan` },
-    { v:1000, q:`This island nation is where Eren, Mikasa, and Armin grow up, isolated from the rest of the world across the sea.`, a:`Paradis Island` } ]},
+    { v:1, q:`On the 104th trainees' first day, Sasha Blouse earns a lifelong nickname by eating this stolen food during roll call.`, a:`A potato / a steamed potato` },
+    { v:2, q:`The sweet blonde 104th trainee who goes by Krista Lenz is living under an alias; her real name is this.`, a:`Historia Reiss` },
+    { v:3, q:`Built specifically to crack the Armored Titan's hide, these new Survey Corps explosive weapons debut in the battle to retake Wall Maria.`, a:`Thunder Spears` },
+    { v:4, q:`Before he screamed at the 104th as their chief instructor, this man was Erwin's predecessor as commander of the Survey Corps.`, a:`Keith Shadis / Keith Sadies` },
+    { v:5, q:`Before the 57th expedition, someone secretly kills Hange's two captured Titan test subjects: Sawney and this one.`, a:`Bean / Beane` },
+    { v:6, q:`This Military Police Brigade commander, Erwin's old Training Corps friend, married Marie, the woman Erwin also loved.`, a:`Nile Dok / Nile Dawk` } ]},
   { name:`Jujutsu Kaisen`, clues:[
-    { v:200,  q:`Yuji Itadori becomes the vessel for the King of Curses after swallowing one of these rotting objects.`, a:`Ryomen Sukuna's finger` },
-    { v:400,  q:`Satoru Gojo possesses the Six Eyes and this inherited cursed technique that manipulates space at an atomic level.`, a:`Limitless` },
-    { v:600,  q:`Megumi Fushiguro uses hand shadows to summon shikigami through this inherited Zenin clan technique.`, a:`Ten Shadows Technique` },
-    { v:800,  q:`This supreme jujutsu technique traps a target inside a caster's innate environment, guaranteeing that all attacks hit.`, a:`Domain Expansion` },
-    { v:1000, q:`Before becoming a villain, this special-grade curse user was Satoru Gojo's best friend at Tokyo Jujutsu High.`, a:`Suguru Geto` } ]},
+    { v:1, q:`Gojo's Domain Expansion, which paralyzes Jogo by flooding his mind with more information than he can process, is called this.`, a:`Unlimited Void / Infinite Void / Muryokusho` },
+    { v:2, q:`To keep his Cursed Speech from accidentally cursing people, Toge Inumaki only talks using the names of fillings for this food.`, a:`Rice balls / onigiri` },
+    { v:3, q:`Aoi Todo claps his hands to swap the positions of anything carrying cursed energy with this technique.`, a:`Boogie Woogie` },
+    { v:4, q:`Yuji befriends this bullied high schooler, whom Mahito manipulates, trains, and finally transfigures right in front of Yuji.`, a:`Junpei Yoshino / Junpei` },
+    { v:5, q:`In Gojo's Past arc, teenage Gojo and Geto must escort this girl, the Star Plasma Vessel, to merge with Master Tengen.`, a:`Riko Amanai` },
+    { v:6, q:`Panda's 'father', a maker of cursed corpses, is this man, the principal of Tokyo Jujutsu High.`, a:`Masamichi Yaga / Yaga` } ]},
   { name:`90s & 2000s Anime`, clues:[
-    { v:200,  q:`In Cowboy Bebop, Spike Spiegel and his crew travel through space aboard this titular ship hunting down bounties.`, a:`The Bebop` },
-    { v:400,  q:`In Death Note, Light Yagami finds a supernatural notebook dropped into the human world by this apple-loving Shinigami.`, a:`Ryuk` },
-    { v:600,  q:`In Yu Yu Hakusho, Yusuke Urameshi becomes a Spirit Detective after dying while saving a child from this.`, a:`A speeding car` },
-    { v:800,  q:`In Inuyasha, Kagome Higurashi travels back to the Sengoku period by falling down this family landmark.`, a:`The Bone-Eater's Well` },
-    { v:1000, q:`In Neon Genesis Evangelion, Shinji Ikari pilots this purple-and-green biomechanical mecha.`, a:`Evangelion Unit-01` } ]},
-  { name:`Pokémon`, clues:[
-    { v:200,  q:`Ash Ketchum's Pikachu refuses to evolve into this Pokémon, even when offered a Thunder Stone.`, a:`Raichu` },
-    { v:400,  q:`Jessie, James, and Meowth make up the recurring trio representing this villainous organization.`, a:`Team Rocket` },
-    { v:600,  q:`In the Kanto region, trainers must collect eight Gym Badges to challenge this elite group of four trainers and the Champion.`, a:`The Elite Four` },
-    { v:800,  q:`This Sleep Pokémon famously blocked Route 12 in the Kanto region until woken up by a Poké Flute.`, a:`Snorlax` },
-    { v:1000, q:`Created by scientists from the DNA of Mew, this Psychic-type Legendary Pokémon escaped from a lab on Cinnabar Island.`, a:`Mewtwo` } ]},
+    { v:1, q:`In Cowboy Bebop, Ein, the genius 'data dog' that Spike and Jet take in, is this breed.`, a:`Pembroke Welsh Corgi / Corgi` },
+    { v:2, q:`In Death Note, this Shinigami, devoted to Misa, writes the names of L and Watari knowing it will cost her own life.`, a:`Rem` },
+    { v:3, q:`In Yu Yu Hakusho, Yusuke's signature attack, a blast of energy fired from his index finger, is called this.`, a:`Spirit Gun / Rei Gun / Reigan` },
+    { v:4, q:`In Trigun, the destruction of the city of July earned Vash the Stampede this disaster-themed nickname.`, a:`The Humanoid Typhoon` },
+    { v:5, q:`In Sailor Moon, the rose-throwing Tuxedo Mask is secretly this young man, who keeps teasing Usagi about her hairstyle.`, a:`Mamoru Chiba / Darien Shields (English dub)` },
+    { v:6, q:`In Neon Genesis Evangelion, Kaworu Nagisa is introduced humming this melody, the same music that plays as he descends into Terminal Dogma.`, a:`Ode to Joy / Beethoven's Ninth Symphony (4th movement)` } ]},
+  { name:`Pok\u00e9mon`, clues:[
+    { v:1, q:`Misty tags along on Ash's journey until he pays her back for this, which Pikachu wrecked in the very first episode.`, a:`Her bike / bicycle` },
+    { v:2, q:`Before joining Ash, this Pokemon led a sunglasses-wearing gang of abandoned prankster Pokemon.`, a:`Squirtle` },
+    { v:3, q:`In Pokemon the Movie 2000, this great guardian rises from the sea to end the clash between Articuno, Zapdos, and Moltres.`, a:`Lugia` },
+    { v:4, q:`Between Kanto and Johto, Ash claimed his first-ever championship by defeating Drake and his Dragonite to win this.`, a:`The Orange League / Orange Islands / the Winner's Trophy` },
+    { v:5, q:`Team Rocket's talking Pokemon taught himself to walk upright and speak human language to win over this snobbish female Pokemon.`, a:`Meowzie / Madonna (Japanese)` },
+    { v:6, q:`Ritchie, the trainer who knocks Ash out of the Indigo League, gives his own Pikachu this nickname.`, a:`Sparky` } ]},
   { name:`Anime Grab Bag`, clues:[
-    { v:200,  q:`In Naruto, this nine-tailed demon fox is sealed inside Naruto Uzumaki on the day of his birth.`, a:`Kurama` },
-    { v:400,  q:`In Dragon Ball Z, Goku first transforms into a Super Saiyan during his battle against this galactic tyrant on Planet Namek.`, a:`Frieza` },
-    { v:600,  q:`In My Hero Academia, Izuku Midoriya inherits this quirk from his idol, All Might.`, a:`One For All` },
-    { v:800,  q:`In Demon Slayer, Tanjiro Kamado becomes a demon slayer to find a cure for his younger sister, who was turned into a demon.`, a:`Nezuko` },
-    { v:1000, q:`In Hunter x Hunter, Gon Freecss takes the Hunter Exam in hopes of finding his absent father, who holds this title.`, a:`Double-Star Hunter / Ging Freecss` } ]} ]},
+    { v:1, q:`In One Piece, the Straw Hats' first real ship, a gift from Kaya, is this vessel they later send off in a fiery farewell.`, a:`The Going Merry / Merry` },
+    { v:2, q:`In Naruto, Kakashi's survival test for Team 7 requires them to snatch these from him before noon.`, a:`Bells / two bells` },
+    { v:3, q:`In My Hero Academia, the Symbol of Peace goes by this real name when he is in his skinny true form.`, a:`Toshinori Yagi` },
+    { v:4, q:`In Demon Slayer, timid Zenitsu Agatsuma only unleashes his Thunder Breathing at full strength while he is in this state.`, a:`Asleep / unconscious / passed out` },
+    { v:5, q:`In Hunter x Hunter, Killua's sibling who shares a body with the wish-granting being Nanika is this.`, a:`Alluka / Alluka Zoldyck` },
+    { v:6, q:`In Spy x Family, the Forgers' dog Bond gained his future-sight as Subject 8 of this secret Ostanian military experiment.`, a:`Project Apple` } ]} ]},
 
 { title:`Deep Lore`, cats:[
   { name:`Fullmetal Alchemist: Deep Lore`, clues:[
-    { v:200,  q:`Edward Elric engraved this exact date inside his silver State Alchemist pocket watch as a reminder of when they burned down their house.`, a:`October 3, 1911` },
-    { v:400,  q:`Before becoming the Homunculus Pride, this character lived under the guise of Fuhrer King Bradley's adopted son.`, a:`Selim Bradley` },
-    { v:600,  q:`Unlike Amestrian alchemy, which draws energy from tectonic shifts, Xingese alkahestry draws its power from this flow of life energy.`, a:`The Dragon's Pulse` },
-    { v:800,  q:`This Briggs fortress major general is the older sister of Alex Louis Armstrong and wields a treasured family saber.`, a:`Olivier Mira Armstrong` },
-    { v:1000, q:`In Fullmetal Alchemist: Brotherhood, Father's original name when he was a tiny shadow creature inside a glass flask was this.`, a:`The Dwarf in the Flask / Homunculus` } ]},
+    { v:1, q:`This Major General commands Briggs Fortress, guarding Amestris's northern border against Drachma.`, a:`Olivier Mira Armstrong` },
+    { v:2, q:`In Brotherhood and the manga, Fuhrer King Bradley's young adopted son is secretly this homunculus, the very first one Father created.`, a:`Pride` },
+    { v:3, q:`In Brotherhood and the manga, Ed scratched 'Don't forget 3 Oct. 11' inside his State Alchemist watch, marking the day he and Al did this.`, a:`Burned down their family home (and left Resembool)` },
+    { v:4, q:`Izumi Curtis stranded young Ed and Al on an island for a month, with no alchemy allowed, to work out this riddle.`, a:`All is One, One is All / One is All, All is One` },
+    { v:5, q:`Xingese alkahestry draws its power from this flow of life energy running through the earth, which practitioners must be able to sense.`, a:`The Dragon's Pulse / Ryumyaku (Lung Mei)` },
+    { v:6, q:`Before he called himself Father, the homunculus created in Xerxes centuries ago was known by this name.`, a:`The Dwarf in the Flask` } ]},
   { name:`Attack on Titan: Deep Lore`, clues:[
-    { v:200,  q:`Eren Yeager activates the Coordinate's power for the first time after punching the Titan form of this royal-blooded woman who ate his mother.`, a:`Dina Fritz` },
-    { v:400,  q:`Because of the Curse of Ymir, anyone who inherits the power of one of the Nine Titans is doomed to die after this exact number of years.`, a:`13 years` },
-    { v:600,  q:`Levi Ackerman spent his youth living in this subterranean district beneath the capital before joining the Survey Corps.`, a:`The Underground City` },
-    { v:800,  q:`This Tybur family member reveals the true history of King Karl Fritz during a theatrical speech in Liberio before being eaten by Eren.`, a:`Willy Tybur` },
-    { v:1000, q:`The mysterious glowing creature that fused with Ymir Fritz to create the Founding Titan is scientifically referred to by fans and lore guides as this.`, a:`Hallucigenia / The Source of All Living Matter` } ]},
+    { v:1, q:`Because of the Curse of Ymir, anyone who inherits the power of one of the Nine Titans is doomed to die after this exact number of years.`, a:`13` },
+    { v:2, q:`Eren activates the Coordinate's power for the first time after punching the Titan form of this royal-blooded woman who ate his mother.`, a:`Dina Fritz / Dina Yeager` },
+    { v:3, q:`During Willy Tybur's speech in Liberio, his sister Lara was secretly the true holder of this one of the Nine Titans.`, a:`The War Hammer` },
+    { v:4, q:`Karl Fritz, the 145th King, bound every later royal holder of the Founding Titan, Frieda Reiss included, to his will with this.`, a:`The Vow Renouncing War / the Vow of Renouncing War` },
+    { v:5, q:`In the Final Season, the slave girl Ymir is hunted for sport as punishment after being blamed for this.`, a:`Letting a pig escape / freeing the king's pigs` },
+    { v:6, q:`This Survey Corps soldier's notebook, found after her death, recorded a Titan that spoke to her before it killed her.`, a:`Ilse Langnar` } ]},
   { name:`Jujutsu Kaisen: Deep Lore`, clues:[
-    { v:200,  q:`Toji Fushiguro used this special-grade cursed tool, shaped like a jagged dagger, to bypass Satoru Gojo's Infinity.`, a:`Inverted Spear of Heaven` },
-    { v:400,  q:`Sukuna's Domain Expansion, Malevolent Shrine, differs from almost all others because it lacks this standard structural feature.`, a:`A closed barrier` },
-    { v:600,  q:`This ancient sorcerer orchestrated the Culling Game by hopping bodies using a brain-transplanting cursed technique.`, a:`Kenjaku` },
-    { v:800,  q:`Hakari Kinji's Domain Expansion, Idle Death Gamble, is themed around this Japanese arcade-style slot game.`, a:`Pachinko` },
-    { v:1000, q:`Satoru Gojo and Ryomen Sukuna are both capable of hitting this spatial distortion—which multiplies cursed energy to the power of 2.5—within 0.000001 seconds of a physical strike.`, a:`Black Flash` } ]},
+    { v:1, q:`This phenomenon occurs when cursed energy lands within a millionth of a second of a physical blow, and no sorcerer can trigger it at will.`, a:`Black Flash (Kokusen)` },
+    { v:2, q:`Toji Fushiguro cut through Satoru Gojo's Infinity with this special-grade cursed tool, which nullifies any cursed technique it strikes.`, a:`Inverted Spear of Heaven` },
+    { v:3, q:`Sukuna's Domain Expansion, Malevolent Shrine, differs from almost all others because it lacks this standard structural feature.`, a:`A barrier (it opens without sealing off the space)` },
+    { v:4, q:`Kinji Hakari's pachinko-themed Domain Expansion, whose jackpot grants him unlimited cursed energy and automatic healing, is called this.`, a:`Idle Death Gamble` },
+    { v:5, q:`Hiromi Higuruma's Domain Expansion, Deadly Sentencing, puts its target on trial before this shikigami.`, a:`Judgeman` },
+    { v:6, q:`Hajime Kashimo's one-time technique, which turns his body into an electromagnetic phenomenon at the cost of his life, is called this.`, a:`Mythical Beast Amber` } ]},
   { name:`Anime Power Systems`, clues:[
-    { v:200,  q:`In Hunter x Hunter, Kurapika's chains are conjured using Nen, though his eyes turn scarlet to shift him into this rare sixth Nen category.`, a:`Specialist / Specialization` },
-    { v:400,  q:`In Bleach, a Soul Reaper's Zanpakuto has two release states: Shikai and this ultimate, final release.`, a:`Bankai` },
-    { v:600,  q:`In One Piece, this rare form of Haki—possessed by only one in several million people—allows the user to overpower the wills of others.`, a:`Conqueror's Haki / Haoshoku Haki` },
-    { v:800,  q:`In Chainsaw Man, devils grow stronger based on how much humanity fears their name, while hybrids like Denji fuse with devils through this organ.`, a:`The heart` },
-    { v:1000, q:`In JoJo's Bizarre Adventure, before Stands were introduced in Part 3, Jonathan and Joseph Joestar fought vampires using this sunlight-infused breathing technique.`, a:`Hamon / Ripple` } ]},
+    { v:1, q:`In Bleach, this release normally takes about ten years to master, because the wielder must make their zanpakuto's spirit appear and defeat it.`, a:`Bankai` },
+    { v:2, q:`In One Piece, only about one person in several million is born with this ability, which can knock out weak-willed people nearby.`, a:`Conqueror's Haki / Haoshoku Haki / Color of the Supreme King` },
+    { v:3, q:`In JoJo's Bizarre Adventure Part 1, Will A. Zeppeli teaches Jonathan this breathing-based martial art that channels sunlight-like energy against vampires.`, a:`Hamon / the Ripple` },
+    { v:4, q:`In Demon Slayer, Yoriichi Tsugikuni created this original combat style; Water, Flame and every other style branched off from it.`, a:`Sun Breathing / Breath of the Sun / Hinokami Kagura` },
+    { v:5, q:`In Hunter x Hunter, Kurapika is a Conjurer, but while his eyes are scarlet he becomes this Nen type, using every category at 100%.`, a:`Specialist / Specialization` },
+    { v:6, q:`In Naruto, Onoki's Dust Release combines earth, wind and fire, placing it in this rare class one step beyond two-nature jutsu.`, a:`Kekkei Tota` } ]},
   { name:`Mastermind Villains`, clues:[
-    { v:200,  q:`In Bleach, this former Captain of the 5th Division faked his own death before revealing his plot to overthrow the Soul Society.`, a:`Sosuke Aizen` },
-    { v:400,  q:`In Berserk, this leader of the Band of the Hawk sacrifices his comrades during the Eclipse to be reborn as Femto.`, a:`Griffith` },
-    { v:600,  q:`In Monster, Dr. Kenzo Tenma risks his career to save the life of this young boy, who grows up to become a manipulative serial killer.`, a:`Johan Liebert` },
-    { v:800,  q:`In Code Geass, Lelouch's childhood friend Suzaku Kururugi pilots this white prototype Knightmare Frame.`, a:`Lancelot` },
-    { v:1000, q:`In Hunter x Hunter, this Chimera Ant King develops a deep bond with blind Gungi champion Komugi before dying of radiation poisoning.`, a:`Meruem` } ]},
+    { v:1, q:`In Bleach, this 5th Division captain fakes his own murder after secretly slaughtering Central 46 and orchestrating Rukia's execution in their name.`, a:`Sosuke Aizen` },
+    { v:2, q:`In Berserk, this leader of the Band of the Hawk sacrifices his comrades during the Eclipse to be reborn as Femto.`, a:`Griffith` },
+    { v:3, q:`In Monster, Dr. Kenzo Tenma risks his career to save the life of this young boy, who grows up to become a manipulative serial killer.`, a:`Johan Liebert` },
+    { v:4, q:`In Naruto, this creation of Kaguya steered Indra's descendants for centuries and fooled Madara into believing Madara had created it.`, a:`Black Zetsu` },
+    { v:5, q:`In Durarara!!, this information broker stirs up gang conflicts for his own amusement and is Shizuo Heiwajima's sworn enemy.`, a:`Izaya Orihara` },
+    { v:6, q:`Psycho-Pass villain Shogo Makishima can't be shot by a Dominator because he has this status: Sibyl persistently rates him as low-risk.`, a:`Criminally asymptomatic` } ]},
   { name:`Studio & Director Signatures`, clues:[
-    { v:200,  q:`This co-founder of Studio Ghibli directed Spirited Away, Princess Mononoke, and The Boy and the Heron.`, a:`Hayao Miyazaki` },
-    { v:400,  q:`Famous for editing techniques that blur reality and dreams, this late director created Paprika, Perfect Blue, and Paranoia Agent.`, a:`Satoshi Kon` },
-    { v:600,  q:`This studio animated Attack on Titan Seasons 1–3 before MAPPA took over for the Final Season.`, a:`Wit Studio` },
-    { v:800,  q:`Shinichiro Watanabe directed both Cowboy Bebop and this hip-hop-infused Edo-period samurai anime.`, a:`Samurai Champloo` },
-    { v:1000, q:`Studio Trigger, founded by former Gainax animators, is famous for Kill la Kill and this 2022 Netflix video game adaptation.`, a:`Cyberpunk: Edgerunners` } ]} ]},
+    { v:1, q:`This director, who died in 2010, blurred fiction and reality in Perfect Blue, Millennium Actress and Paprika.`, a:`Satoshi Kon` },
+    { v:2, q:`Founded in 2012 by Production I.G producers, this company animated the first three seasons of Attack on Titan.`, a:`Wit Studio` },
+    { v:3, q:`Shinichiro Watanabe directed this hip-hop-scored series set in a fictionalized Edo era, studio Manglobe's first TV production.`, a:`Samurai Champloo` },
+    { v:4, q:`This Studio Trigger co-founder directed Gurren Lagann, Promare and Cyberpunk: Edgerunners.`, a:`Hiroyuki Imaishi` },
+    { v:5, q:`Spiraling missile-swarm dogfights are nicknamed a 'circus' after this animator, who made them famous in Super Dimension Fortress Macross.`, a:`Ichiro Itano` },
+    { v:6, q:`Hideaki Anno and friends made famous amateur opening films for these Osaka sci-fi conventions before founding Gainax.`, a:`Daicon (III and IV) / the Nihon SF Taikai` } ]} ]},
 
 { title:`Expert Mode`, cats:[
   { name:`Fullmetal Alchemist: Obscure Details`, clues:[
-    { v:200,  q:`Maes Hughes was murdered by Envy while disguised as this close friend and subordinate of Hughes.`, a:`Maria Ross` },
-    { v:400,  q:`Hohenheim gained immortality when Xerxes was transmuted into a Philosopher's Stone, sharing half the souls with Father and becoming this exact slave number.`, a:`Slave Number 23` },
-    { v:600,  q:`Roy Mustang's trusted lieutenant Riza Hawkeye has the secret of Flame Alchemy tattooed on this part of her body.`, a:`Her back` },
-    { v:800,  q:`This Homunculus, representing the sin of Sloth in Brotherhood, spent years digging a massive nationwide transmutation circle underground.`, a:`Sloth` },
-    { v:1000, q:`After losing his Alchemy at the end of Brotherhood, Edward Elric travels west while Alphonse travels east to study alkahestry in this country.`, a:`Xing` } ]},
+    { v:1, q:`In the manga and Brotherhood, Riza Hawkeye carries her father's Flame Alchemy research as a tattoo on this part of her body.`, a:`Her back` },
+    { v:2, q:`In the manga and Brotherhood, this hulking Homunculus, secretly the fastest of them all, spent decades digging the nationwide transmutation circle tunnel under Amestris.`, a:`Sloth` },
+    { v:3, q:`In the 2003 anime, the Homunculi are led not by Father but by this centuries-old alchemist, Hohenheim's former lover.`, a:`Dante` },
+    { v:4, q:`In the manga, Hughes saw through Envy's disguise as 2nd Lt. Maria Ross because the fake lacked this small feature beneath her left eye.`, a:`Her mole / beauty mark` },
+    { v:5, q:`In the manga and Brotherhood, this coroner, who dissected Mustang's Ishvalan victims during the war, later treats Lan Fan after she loses her arm.`, a:`Dr. Knox / Knox` },
+    { v:6, q:`In the manga and Brotherhood, before settling on 'Van Hohenheim', the future Father first offered Slave 23 this name, ruled too hard for him.`, a:`Theophrastus Bombastus` } ]},
   { name:`Attack on Titan: Obscure Details`, clues:[
-    { v:200,  q:`Kenny Ackerman was the ruthless leader of the Anti-Personnel Control Squad and shared this familial relationship with Levi.`, a:`His uncle` },
-    { v:400,  q:`Reiner Braun, Bertholdt Hoover, and Annie Leonhart originally infiltrated Wall Maria alongside this fourth Warrior who was eaten by Ymir.`, a:`Marcel Galliard` },
-    { v:600,  q:`Before inheriting the Attack Titan from Grisha, Eren Kruger used this undercover alias while working inside Marley's Public Security Authorities.`, a:`The Owl` },
-    { v:800,  q:`The Marleyan military unit composed of Eldian candidates fighting for Honorary Marleyan status wears armbands of this color before inheriting a Titan.`, a:`Yellow` },
-    { v:1000, q:`Mikasa Ackerman's clan originally came to Paradis Island from this eastern nation allied with the Tybur family.`, a:`Hizuru` } ]},
+    { v:1, q:`Kenny Ackerman was the ruthless leader of the Anti-Personnel Control Squad and shared this familial relationship with Levi.`, a:`His uncle (maternal uncle)` },
+    { v:2, q:`Reiner, Bertholdt and Annie crossed to Paradis with this fourth Warrior, who saved Reiner by letting Ymir's Pure Titan devour him instead.`, a:`Marcel Galliard` },
+    { v:3, q:`Eren Kruger, the spy posing as a Marleyan officer who later passed the Attack Titan to Grisha, signed his messages to the Eldian Restorationists with this code name.`, a:`The Owl` },
+    { v:4, q:`In Liberio, Warrior candidates such as Gabi and Falco wear Eldian armbands of this colour, while Titan inheritors and their families wear red.`, a:`Yellow` },
+    { v:5, q:`Mikasa's mother descended from this noble Hizuran house, the old shogun's line, whose head Kiyomi comes to Paradis as an ambassador.`, a:`The Azumabito` },
+    { v:6, q:`Zeke inherited both the Beast Titan and his glasses from this Eldian researcher, who first bonded with him over games of catch.`, a:`Tom Ksaver / Tom Xaver` } ]},
   { name:`Jujutsu Kaisen: Obscure Details`, clues:[
-    { v:200,  q:`Megumi Fushiguro's untamed shikigami, summoned as a last resort in Shibuya, is named Eight-Handled Sword Divergent Sila Divine General…`, a:`Mahoraga` },
-    { v:400,  q:`Yuta Okkotsu's immense cursed energy originally stemmed from accidentally cursing this childhood friend after she died in a car crash.`, a:`Rika Orimoto` },
-    { v:600,  q:`Choso is the oldest of three hybrid Curse-Human siblings created by Noritoshi Kamo, collectively known as these numbered objects.`, a:`Death Painting Wombs` },
-    { v:800,  q:`Yuki Tsukumo's innate cursed technique, Star Rage, allows her to add this imaginary property to herself and her shikigami Garuda.`, a:`Virtual mass` },
-    { v:1000, q:`During the Shibuya Incident, Satoru Gojo is sealed inside this special-grade cursed object after seeing Kenjaku in Geto's body.`, a:`Prison Realm` } ]},
+    { v:1, q:`Bleeding out against Haruta Shigemo in Shibuya, Megumi summoned this never-tamed shikigami, whose wheel turns as it adapts, to kill them both.`, a:`Mahoraga` },
+    { v:2, q:`Kento Nanami's Ratio Technique forces a critical weak point onto his target at exactly this ratio along its length.`, a:`7:3 / seven to three` },
+    { v:3, q:`Choso, Eso and Kechizu are the first three of these nine half-human hybrids born of Noritoshi Kamo's experiments.`, a:`The Death Paintings (Cursed Womb: Death Paintings / Death Painting Wombs)` },
+    { v:4, q:`Yuki Tsukumo's technique, Star Rage, grants this to herself and her shikigami Garuda, letting a single blow exorcise a special grade curse.`, a:`Virtual mass / Mass` },
+    { v:5, q:`Yuta Okkotsu's enormous cursed energy comes from his descent from this famed Heian-era figure, which also makes him a distant relative of Gojo.`, a:`Sugawara no Michizane` },
+    { v:6, q:`The Prison Realm that sealed Gojo in Shibuya is the living final remains of this Buddhist monk.`, a:`Genshin` } ]},
   { name:`Dark Fantasy & Seinen`, clues:[
-    { v:200,  q:`In Berserk, Guts wields a massive slab of iron known by this dramatic moniker.`, a:`Dragonslayer` },
-    { v:400,  q:`In Vinland Saga, Thorfinn's pacifist philosophy ("I have no enemies") comes directly from his late father, who held this legendary nickname.`, a:`Thors the Troll` },
-    { v:600,  q:`In Tokyo Ghoul, Ken Kaneki's hair turns white after days of brutal torture by this Aogiri Tree executive, also known as Yamori.`, a:`Jason / Yakumo Oomori` },
-    { v:800,  q:`In Made in Abyss, ascending from the 6th Layer of the Abyss inflicts a curse causing loss of humanity or death, known as the Curse of this.`, a:`The Sixth Layer / The Capital of the Unreturned` },
-    { v:1000, q:`In Dorohedoro, Caiman searches for the sorcerer who cursed him with the head of this animal.`, a:`A reptile / lizard / caiman` } ]},
-  { name:`2010s–2020s Modern Hits`, clues:[
-    { v:200,  q:`In Mob Psycho 100, Shigeo Kageyama works part-time for this con-artist "spirit medium" who relies on salt splashes and massages.`, a:`Arataka Reigen` },
-    { v:400,  q:`In Frieren: Beyond Journey's End, Frieren's apprentice Fern was originally raised by this corrupt priest from the Hero's Party.`, a:`Heiter` },
-    { v:600,  q:`In Steins;Gate, Rintaro Okabe sends text messages back in time using a modified microwave called the PhoneWave, calling those messages this.`, a:`D-Mails` },
-    { v:800,  q:`In Spy x Family, Loid Forger's real spy codename is Twilight, while Yor Forger operates as an assassin under this alias.`, a:`Thorn Princess` },
-    { v:1000, q:`In Dandadan, Okarun loses his family jewels after being cursed by this high-speed urban legend yokai.`, a:`Turbo Granny` } ]},
+    { v:1, q:`In Tokyo Ghoul, Kaneki's hair turns white after he is tortured by this hulking Aogiri Tree executive, whose finger-cracking habit Kaneki then adopts.`, a:`Yamori / Jason (Yakumo Oomori)` },
+    { v:2, q:`In Vinland Saga, before faking his death to farm in Iceland, Thorfinn's father Thors was a legendary warrior known by this nickname.`, a:`The Troll of Jom` },
+    { v:3, q:`In Dororo, this samurai lord traded his unborn son Hyakkimaru's body parts to demons in exchange for power over his land.`, a:`Daigo Kagemitsu` },
+    { v:4, q:`In Dorohedoro, Nikaido serves the gyoza Caiman adores at this restaurant she runs in the Hole.`, a:`The Hungry Bug` },
+    { v:5, q:`In Made in Abyss, ascending from the Abyss's sixth layer strips away your humanity or kills you, earning that layer this ominous name.`, a:`The Capital of the Unreturned` },
+    { v:6, q:`Since Kentaro Miura's death, Berserk has continued at Studio Gaga under this manga artist, Miura's longtime friend, whose bond with him inspired Guts and Griffith's.`, a:`Kouji Mori` } ]},
+  { name:`2010s-2020s Modern Hits`, clues:[
+    { v:1, q:`In Dandadan, this yokai from a haunted tunnel steals Okarun's family jewels, then ends up stuck inside a maneki-neko doll.`, a:`Turbo Granny` },
+    { v:2, q:`In Steins;Gate, Rintaro Okabe sends text messages back in time using a modified microwave called the PhoneWave, calling those messages this.`, a:`D-Mails` },
+    { v:3, q:`In Spy x Family, Yor Forger takes her jobs as the assassin Thorn Princess from this secret organization, run by the Shopkeeper.`, a:`Garden` },
+    { v:4, q:`In Oshi no Ko, Ruby Hoshino is the reincarnation of this terminally ill girl, a patient of Dr. Gorou and a devoted Ai fan.`, a:`Sarina Tendouji` },
+    { v:5, q:`In Frieren, Zoltraak, now ordinary offensive magic, was originally invented as 'Killing Magic' by this demon.`, a:`Qual (the Sage of Corruption)` },
+    { v:6, q:`In Dr. Stone, Senku's revival fluid, which frees people by corroding their stone shell, is a form of this industrial etching solution.`, a:`Nital` } ]},
   { name:`Anime Weapons & Artifacts`, clues:[
-    { v:200,  q:`In Inuyasha, Inuyasha's fang-forged sword capable of slaying a hundred demons in one swing is named this.`, a:`Tessaiga` },
-    { v:400,  q:`In Kill la Kill, Ryuko Matoi's sentient sailor uniform feeds on her blood and transforms into Life Fiber Synchronize under this name.`, a:`Senketsu` },
-    { v:600,  q:`In Fate/stay night, Saber's invisible sword is actually this legendary Arthurian blade concealed by wind magic.`, a:`Excalibur` },
-    { v:800,  q:`In Soul Eater, Maka Albarn's scythe partner, Soul Eater Evans, transforms into a Death Scythe after consuming 99 Kishin eggs and one soul of this type.`, a:`A witch's soul` },
-    { v:1000, q:`In Akira, the psychic energy of Tetsuo and Akira is contained at zero Kelvin beneath the Olympic Stadium in this titular city.`, a:`Neo-Tokyo` } ]} ]},
+    { v:1, q:`In Kill la Kill, Ryuko Matoi's talking sailor uniform is this Kamui, made especially for her by her father Isshin.`, a:`Senketsu` },
+    { v:2, q:`Sesshomaru long resented this sword from his father: it cannot cut the living, but one swing can save a hundred lives.`, a:`Tenseiga` },
+    { v:3, q:`In Soul Eater, a demon weapon becomes a Death Scythe by absorbing 99 evil human souls and then the soul of one of these.`, a:`A witch` },
+    { v:4, q:`In Fate/stay night, Saber keeps Excalibur, whose famous blade would give away her true identity, wrapped in this Bounded Field.`, a:`Invisible Air (Barrier of the Wind King)` },
+    { v:5, q:`In Akira, Tetsuo loses his right arm when the military fires this orbital laser satellite at him.`, a:`SOL` },
+    { v:6, q:`In Rurouni Kenshin, Kenshin's reverse-blade sword was one of the last blades made by this master swordsmith, famed for inventive killing weapons.`, a:`Arai Shakku` } ]} ]},
 ];
 
 const SLOT_COUNT = 3;
@@ -566,6 +590,13 @@ function nextClue(){
 function nextPage(){
   if(ROLE!=="admin" || game.page >= BOARDS.length-1) return;
   pushGame({ page:game.page+1, open:null, revealed:false });
+}
+/* Wipes clue progress on every board and drops everyone on board 1 with
+   every cell open. The game stays started. It asks first because one stray
+   click mid-show would replay every answered clue. */
+function resetQuestions(){
+  if(ROLE!=="admin" || !confirm("Reset every question on all boards?")) return;
+  pushGame({ used:[], page:0, open:null, revealed:false });
 }
 function clearBoard(){
   if(ROLE!=="admin") return;
@@ -798,7 +829,7 @@ function renderJeopardy(){
     const cat=b.cats[game.open.c], cl=cat && cat.clues[game.open.r];
     const panel=document.createElement("div"); panel.className="jbClue";
     const v=document.createElement("div"); v.className="jbVal";
-    v.textContent=(cat?cat.name:"")+"  •  $"+(cl?cl.v:0);
+    v.textContent=(cat?cat.name:"")+"  •  "+(cl?cl.v:0)+" Focus";
     const q=document.createElement("div"); q.className="jbQ"; q.textContent=cl?cl.q:"";
     panel.append(v,q);
     if(game.revealed){
@@ -822,7 +853,11 @@ function renderJeopardy(){
       const cl=b.cats[ci].clues[r], used=isUsed(game.page,ci,r);
       const cell=document.createElement("div");
       cell.className="jbCell"+(used?" used":(isAdmin&&cl?" pick":""));
-      cell.textContent=cl?("$"+cl.v):"";
+      if(cl){
+        const n=document.createElement("span"); n.textContent=cl.v;
+        const f=document.createElement("span"); f.className="jbFocus"; f.textContent="Focus";
+        cell.append(n,f);
+      }
       if(cl && !used && isAdmin) cell.addEventListener("click",()=>openClue(ci,r));
       grid.appendChild(cell);
     }
@@ -836,6 +871,7 @@ function renderJeopardy(){
       bar.appendChild(jbBtn("Next",nextClue));
     }else{
       if(game.page < BOARDS.length-1) bar.appendChild(jbBtn("Next board",nextPage));
+      bar.appendChild(jbBtn("Reset questions",resetQuestions,"wipe"));
       bar.appendChild(jbBtn("Back to party select",backToSelect,"wipe"));
     }
     host.appendChild(bar);
@@ -843,6 +879,8 @@ function renderJeopardy(){
 }
 function render(){
   if(!ROLE) return;
+  // The real cursor comes back while the jeopardy board is up.
+  document.body.classList.toggle("gloved", CAN_PLAY() && !game.started);
   document.getElementById("ready").hidden = !bannerOn();
   renderRoster(); renderSlots(); renderBanner(); renderFooter(); renderGloves(); renderJeopardy();
 }
@@ -912,6 +950,9 @@ function paintGlove(key,x,y,pose,slotNum,name){
 }
 function myPose(){ if(carrying()!==null) return "grab"; return hotTarget ? "point" : "open"; }
 function renderGloves(){
+  // No hands on the jeopardy board. Peers are dropped too, so a pre-game
+  // hand does not pop back up stale when the admin returns to select.
+  if(game.started){ peers=[]; for(const el of gloveEls.values()) el.remove(); gloveEls.clear(); return; }
   if(CAN_PLAY()) paintGlove("me",myPos.x,myPos.y,myPose(),mySlot(),myName);
   const seen=new Set(CAN_PLAY()?["me"]:[]);
   for(const p of peers){
@@ -1055,16 +1096,17 @@ function enter(){
     if(ROLE==="admin") localStorage.setItem("elAdminPw",myPw);
   }catch(e){}
   joinEl.remove();
-  if(CAN_PLAY()) document.body.classList.add("gloved");
 
   window.addEventListener("pointermove",e=>{
+    // myPos keeps tracking on the board so the glove is in the right place
+    // the moment the admin goes back to select; it just is not sent.
     myPos={x:e.clientX/window.innerWidth,y:e.clientY/window.innerHeight};
     updateHot(e); renderGloves();
-    if(live && CAN_PLAY() && !presenceTimer){
+    if(live && CAN_PLAY() && !game.started && !presenceTimer){
       // coalesce to ~25/s; every move is relayed, never stored
       presenceTimer=setTimeout(()=>{
         presenceTimer=0;
-        sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:myPose(), slot:mySlot(), name:myName });
+        if(!game.started) sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:myPose(), slot:mySlot(), name:myName });
       },40);
     }
   },{passive:true});
@@ -1119,7 +1161,7 @@ function connect(){
     backoff=500; live=true;
     sendMsg({ t:"hello", viewerId:myId, name:myName, role:ROLE, tabId, pw:myPw });
     if(CAN_SEAT()) sendMsg({ t:"claim" });
-    if(CAN_PLAY()) sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:"open", slot:null, name:myName });
+    if(CAN_PLAY() && !game.started) sendMsg({ t:"hand", x:myPos.x, y:myPos.y, pose:"open", slot:null, name:myName });
     renderFooter();
   });
   sock.addEventListener("message",ev=>{

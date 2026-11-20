@@ -72,7 +72,7 @@ is `PORT` in the environment:
 |---|---|
 | `OPPOSITION` | The text after "vs" in the top banner |
 | `ROSTER` | The character list |
-| `BOARDS` | The jeopardy boards: three of them, six categories each, five clues per category |
+| `BOARDS` | The jeopardy boards: three of them, six categories each, six clues per category worth 1-6 Focus (`v`) |
 
 A roster entry needs only a name:
 
@@ -111,13 +111,18 @@ runs board 1 to board 3 without an extra click. **Next board** skips ahead early
 **Back to party select** returns everyone to the roster screen.
 
 Only the admin can pick. Players and viewers see the same screen with no
-controls, and their pucks are frozen while the board is up. Hands stay live, so
-the admin can still point at a category.
+controls, and their pucks are frozen while the board is up. Hands are hidden
+while the board is up: no glove is drawn or relayed, and players and the admin
+get their normal mouse cursor back. Gloves return on the next mouse move after
+**Back to party select**.
 
 Progress lives in `board.game` and survives a reload — an OBS source that
 reconnects mid-show lands back on the right screen. **Clear board** frees the
 seats and returns everyone to select but deliberately keeps trivia progress, so
-a mid-show reset does not replay answered clues.
+a mid-show reset does not replay answered clues. To start the trivia over, the
+admin's **Reset questions** button (on the grid or Board clear view, behind a
+confirm) clears all clue progress on every board and puts everyone back on
+board 1 with the game still running.
 
 Editing `BOARDS` is the only thing needed to change the questions. The grid is
 drawn from that array, so a category with four clues instead of five just works.
