@@ -17,6 +17,7 @@
   --display:"Archivo Black",Impact,sans-serif;
   --cond:"Saira Condensed","Arial Narrow",sans-serif;
   --round:"M PLUS Rounded 1c",system-ui,sans-serif;
+  --card-h:282px;              /* seat card height; the seat row reserves card + 11px */
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -30,7 +31,8 @@ body{
   display:flex;justify-content:center;padding:22px 16px 30px;
 }
 body.gloved,body.gloved *{cursor:none}
-.stage{width:min(1040px,100%);display:flex;flex-direction:column;gap:14px}
+.stage{width:100%;display:flex;flex-direction:column;gap:14px}
+.stage>*{flex-shrink:0}        /* overflow scrolls; it must not squash the footer/bar */
 
 /* join */
 .join{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(8,12,19,.93)}
@@ -76,14 +78,21 @@ body.gloved,body.gloved *{cursor:none}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.8)}
 .title span em{font-style:normal;color:var(--gold)}
 
-/* roster */
-.roster{align-self:center;width:calc(9 * 104px + 8 * 3px);max-width:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
-.tile{width:104px;padding:2px;border:0;font:inherit;color:inherit;display:block;position:relative;
+/* roster. --tw (tile width) and --cols are set by fitRoster() on desktop;
+   the fallbacks are the old 9 x 104px grid, which phones still use. */
+.roster{align-self:center;width:calc(var(--cols,9) * var(--tw,104px) + (var(--cols,9) - 1) * 3px);
+  display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
+.tile{width:var(--tw,104px);padding:2px;border:0;font:inherit;color:inherit;display:block;position:relative;
   background:linear-gradient(160deg,var(--steel-1),var(--steel-2) 38%,var(--steel-3) 62%,var(--steel-4));
   box-shadow:0 2px 3px rgba(0,0,0,.5);transition:transform .08s ease,filter .08s ease}
 .tile.hot{transform:translateY(-3px) scale(1.05);filter:brightness(1.2);z-index:4}
-.tile .art{position:relative;height:72px;overflow:hidden;background:linear-gradient(165deg,var(--a1),var(--a2))}
-.tile .art img{width:100%;height:100%;object-fit:cover;display:block}
+.tile .art{position:relative;aspect-ratio:13/9;overflow:hidden;background:linear-gradient(165deg,var(--a1),var(--a2))}
+/* Portrait images (tile art 13:9, seat portrait 1:1). Untagged: cover, biased
+   to the top where faces are. Tagged (img.framed): frameFace() writes
+   left/top/width/height in % of the frame. */
+.tile .art img,.portrait img{position:absolute;left:0;top:0;width:100%;height:100%;max-width:none;max-height:none;
+  object-fit:cover;object-position:50% 15%;display:block}
+.tile .art img.framed,.portrait img.framed{object-fit:fill}
 .tile .initials{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);
   font-size:26px;color:rgba(30,40,52,.78);text-shadow:0 1px 0 rgba(255,255,255,.45)}
 .tile .plate{background:linear-gradient(180deg,var(--plate-1),var(--plate-2));font-weight:700;font-size:10.5px;
@@ -102,7 +111,9 @@ body.gloved,body.gloved *{cursor:none}
 .puck.big{font-size:16px;padding:7px 11px;border-width:3px}
 
 /* cards */
-.slots{align-self:center;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;max-width:100%;min-height:120px}
+/* The seat row always reserves a full card's height, so the first player
+   joining does not shove the roster around (and fitRoster sees a constant). */
+.slots{align-self:center;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;max-width:100%;min-height:calc(var(--card-h) + 11px)}
 .waiting{align-self:center;padding:34px 10px;font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:#6F8098}
 .slot{width:210px;position:relative;border:0;padding:11px 0 0;font:inherit;color:inherit;background:transparent}
 .hmn{position:absolute;left:8px;top:0;z-index:3;padding:1px;border-radius:2px;background:linear-gradient(180deg,var(--steel-2),var(--steel-4))}
@@ -111,7 +122,7 @@ body.gloved,body.gloved *{cursor:none}
   text-overflow:ellipsis;border-radius:1px}
 .hmn.mine i{background:linear-gradient(180deg,var(--gold),#A8860B);color:#171C24}
 .card{background:linear-gradient(158deg,var(--steel-1),var(--steel-2) 30%,var(--steel-3) 60%,var(--steel-4));
-  padding:3px;border-radius:7px;height:282px;display:flex;flex-direction:column;box-shadow:0 4px 8px rgba(0,0,0,.55)}
+  padding:3px;border-radius:7px;height:var(--card-h);display:flex;flex-direction:column;box-shadow:0 4px 8px rgba(0,0,0,.55)}
 .slot.mine .card{box-shadow:0 0 0 3px var(--gold),0 4px 12px rgba(0,0,0,.6)}
 .slot.hot .card{box-shadow:0 0 0 3px #fff,0 4px 14px rgba(0,0,0,.6)}
 .card .fill{flex:1;border-radius:5px;overflow:hidden;display:flex;flex-direction:column;position:relative;
@@ -119,10 +130,9 @@ body.gloved,body.gloved *{cursor:none}
     linear-gradient(180deg,var(--c),color-mix(in srgb,var(--c) 62%,#06080C))}
 .card.blank .fill{background:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.1),transparent 62%),linear-gradient(180deg,#3A4756,#1A222C)}
 .card .art{flex:1;display:grid;place-items:center;min-height:0;padding:10px}
-.portrait{width:104px;height:104px;border-radius:4px;overflow:hidden;display:grid;place-items:center;
+.portrait{position:relative;width:104px;height:104px;border-radius:4px;overflow:hidden;display:grid;place-items:center;
   background:linear-gradient(165deg,var(--a1),var(--a2));font-family:var(--display);font-size:34px;
   color:rgba(28,38,50,.8);text-shadow:0 1px 0 rgba(255,255,255,.4);box-shadow:0 4px 12px rgba(0,0,0,.45)}
-.portrait img{width:100%;height:100%;object-fit:cover}
 .card .empty{font-weight:700;font-size:12.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.55);text-align:center;line-height:1.8}
 .dock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}
 .namewrap{padding:0 10px 4px}
@@ -136,7 +146,11 @@ body.gloved,body.gloved *{cursor:none}
   -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(20,26,34,.85)}
 
 /* footer */
-.footer{align-self:center;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:14px;font-weight:600;color:#93A2B4}
+/* Fixed height on desktop, even when empty (viewer), so every role at the same
+   window size gets the same roster grid: peer gloves are drawn by viewport
+   fraction and only point at the right tile if the layouts match. */
+.footer{align-self:center;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:14px;font-weight:600;color:#93A2B4;
+  height:32px}
 .roleTag{font-size:11px;font-weight:700;letter-spacing:.14em;padding:3px 8px;border:1px solid #4A5768;color:#8B9AAC}
 .roleTag.live{color:var(--gold);border-color:#A8860B}
 .hint b{color:var(--gold)}
@@ -199,7 +213,16 @@ body.gloved,body.gloved *{cursor:none}
   color:#fff;background:rgba(10,14,20,.85);padding:1px 6px;border-radius:2px;white-space:nowrap;max-width:150px;
   overflow:hidden;text-overflow:ellipsis}
 
-@media (max-width:900px){.roster{width:100%}.melee{font-size:26px}}
+/* Short desktop windows (1366x768 laptops, windowed browsers): tighter
+   padding and gaps and a shorter seat card, so the roster keeps >= 64px tiles.
+   The card still holds the 104px portrait (art area 210-30-38 = 142px). */
+@media (min-width:901px) and (max-height:860px){
+  :root{--card-h:216px}
+  body{padding:12px 12px}
+  .stage{gap:10px}
+}
+@media (max-width:900px){.roster{width:100%}.melee{font-size:26px}
+  .slots{min-height:120px}.footer{height:auto}}
 </style>
 </head>
 <body>
@@ -262,32 +285,53 @@ body.gloved,body.gloved *{cursor:none}
 /* The party's opposition, shown after "vs" in the top banner. */
 const OPPOSITION = "Adventure";
 
-/* ROSTER — `name` required; `series` and `img` optional.
-   With no img the tile shows initials on a colour derived from the name. */
+/* ROSTER — `name` required; `series`, `img` and `face` optional.
+   With no img the tile shows initials on a colour derived from the name.
+   face:[cx, cy, fh] frames the picture on the face: cx/cy are the centre of
+   the face box and fh its height (top of the hair to the chin), all as
+   fractions of the original image. Without it the picture is cover-cropped
+   from near the top. */
 const ROSTER = [
-  { name:"Goku", series:"Dragon Ball" },      { name:"Vegeta", series:"Dragon Ball" },
-  { name:"Luffy", series:"One Piece" },       { name:"Zoro", series:"One Piece" },
-  { name:"Nami", series:"One Piece" },        { name:"Naruto", series:"Naruto" },
-  { name:"Sasuke", series:"Naruto" },         { name:"Sakura", series:"Naruto" },
-  { name:"Ichigo", series:"Bleach" },         { name:"Rukia", series:"Bleach" },
-  { name:"Edward", series:"Fullmetal Alchemist" }, { name:"Alphonse", series:"Fullmetal Alchemist" },
-  { name:"Tanjiro", series:"Demon Slayer" },  { name:"Nezuko", series:"Demon Slayer" },
-  { name:"Zenitsu", series:"Demon Slayer" },  { name:"Deku", series:"My Hero Academia" },
-  { name:"Bakugo", series:"My Hero Academia" }, { name:"All Might", series:"My Hero Academia" },
-  { name:"Eren", series:"Attack on Titan" },  { name:"Mikasa", series:"Attack on Titan" },
-  { name:"Levi", series:"Attack on Titan" },  { name:"Gon", series:"Hunter x Hunter" },
-  { name:"Killua", series:"Hunter x Hunter" },{ name:"Yusuke", series:"Yu Yu Hakusho" },
-  { name:"Spike", series:"Cowboy Bebop" },    { name:"Faye", series:"Cowboy Bebop" },
-  { name:"Saitama", series:"One Punch Man" }, { name:"Genos", series:"One Punch Man" },
-  { name:"Gojo", series:"Jujutsu Kaisen" },   { name:"Yuji", series:"Jujutsu Kaisen" },
-  { name:"Asta", series:"Black Clover" },     { name:"Mereoleona", series:"Black Clover" },
-  { name:"Thorfinn", series:"Vinland Saga" }, { name:"Guts", series:"Berserk" },
-  { name:"Inuyasha", series:"Inuyasha" },     { name:"Kenshin", series:"Rurouni Kenshin" },
-  { name:"Megumi", series:"Jujutsu Kaisen" }, { name:"Nobara", series:"Jujutsu Kaisen" },
-  { name:"Maki", series:"Jujutsu Kaisen" },   { name:"Aoi Todo", series:"Jujutsu Kaisen" },
-  { name:"Roy Mustang", series:"Fullmetal Alchemist" }, { name:"Scar", series:"Fullmetal Alchemist" },
-  { name:"Olivier", series:"Fullmetal Alchemist" },     { name:"Armin", series:"Attack on Titan" },
-  { name:"Annie", series:"Attack on Titan" },
+  { name:"Goku", series:"Dragon Ball", face:[0.485,0.188,0.115] },               { name:"Vegeta", series:"Dragon Ball", face:[0.585,0.218,0.145] },
+  { name:"Gohan", series:"Dragon Ball", face:[0.550,0.350,0.540] },              { name:"Piccolo", series:"Dragon Ball", face:[0.720,0.400,0.520] },
+  { name:"Luffy", series:"One Piece", face:[0.500,0.155,0.160] },                { name:"Zoro", series:"One Piece", face:[0.482,0.060,0.105] },
+  { name:"Nami", series:"One Piece", face:[0.490,0.120,0.160] },                 { name:"Sanji", series:"One Piece", face:[0.430,0.330,0.330] },
+  { name:"Robin", series:"One Piece", face:[0.400,0.330,0.660] },                { name:"Ace", series:"One Piece", face:[0.440,0.088,0.095] },
+  { name:"Naruto", series:"Naruto", face:[0.500,0.400,0.600] },                  { name:"Sasuke", series:"Naruto", face:[0.500,0.410,0.760] },
+  { name:"Sakura", series:"Naruto", face:[0.505,0.410,0.820] },                  { name:"Kakashi", series:"Naruto", face:[0.500,0.350,0.400] },
+  { name:"Itachi", series:"Naruto", face:[0.500,0.350,0.500] },                  { name:"Hinata", series:"Naruto", face:[0.500,0.360,0.700] },
+  { name:"Gaara", series:"Naruto", face:[0.500,0.430,0.700] },                   { name:"Ichigo", series:"Bleach", face:[0.520,0.690,0.600] },
+  { name:"Rukia", series:"Bleach", face:[0.490,0.410,0.760] },                   { name:"Byakuya", series:"Bleach", face:[0.480,0.415,0.530] },
+  { name:"Kenpachi", series:"Bleach", face:[0.500,0.510,0.620] },                { name:"Edward", series:"Fullmetal Alchemist", face:[0.475,0.253,0.265] },
+  { name:"Alphonse", series:"Fullmetal Alchemist", face:[0.565,0.080,0.066] },   { name:"Tanjiro", series:"Demon Slayer", face:[0.565,0.131,0.162] },
+  { name:"Nezuko", series:"Demon Slayer", face:[0.665,0.120,0.190] },            { name:"Zenitsu", series:"Demon Slayer", face:[0.540,0.112,0.173] },
+  { name:"Mitsuri", series:"Demon Slayer", img:"images/Mitsuri.png", face:[0.510,0.112,0.155] }, { name:"Inosuke", series:"Demon Slayer", face:[0.500,0.360,0.550] },
+  { name:"Rengoku", series:"Demon Slayer", face:[0.535,0.183,0.250] },           { name:"Shinobu", series:"Demon Slayer", face:[0.465,0.237,0.305] },
+  { name:"Deku", series:"My Hero Academia", face:[0.505,0.372,0.100] },          { name:"Bakugo", series:"My Hero Academia", face:[0.425,0.118,0.135] },
+  { name:"All Might", series:"My Hero Academia", face:[0.500,0.150,0.100] },     { name:"Todoroki", series:"My Hero Academia", face:[0.500,0.340,0.680] },
+  { name:"Uraraka", series:"My Hero Academia", face:[0.500,0.350,0.700] },       { name:"Eren", series:"Attack on Titan", face:[0.545,0.100,0.130] },
+  { name:"Mikasa", series:"Attack on Titan", face:[0.550,0.355,0.650] },         { name:"Levi", series:"Attack on Titan", face:[0.520,0.565,0.860] },
+  { name:"Gon", series:"Hunter x Hunter", face:[0.545,0.405,0.650] },            { name:"Killua", series:"Hunter x Hunter", face:[0.505,0.375,0.725] },
+  { name:"Kurapika", series:"Hunter x Hunter", face:[0.500,0.350,0.700] },       { name:"Hisoka", series:"Hunter x Hunter", face:[0.500,0.380,0.650] },
+  { name:"Yusuke", series:"Yu Yu Hakusho", face:[0.520,0.480,0.860] },           { name:"Spike", series:"Cowboy Bebop", face:[0.590,0.275,0.410] },
+  { name:"Faye", series:"Cowboy Bebop", face:[0.520,0.250,0.460] },              { name:"Saitama", series:"One Punch Man", face:[0.615,0.235,0.450] },
+  { name:"Genos", series:"One Punch Man", face:[0.530,0.190,0.320] },            { name:"Gojo", series:"Jujutsu Kaisen", face:[0.480,0.099,0.108] },
+  { name:"Yuji", series:"Jujutsu Kaisen", face:[0.505,0.100,0.130] },            { name:"Asta", series:"Black Clover", face:[0.450,0.192,0.225] },
+  { name:"Mereoleona", series:"Black Clover", face:[0.360,0.170,0.200] },        { name:"Thorfinn", series:"Vinland Saga", face:[0.400,0.325,0.570] },
+  { name:"Guts", series:"Berserk", face:[0.480,0.158,0.215] },                   { name:"Inuyasha", series:"Inuyasha", face:[0.450,0.345,0.690] },
+  { name:"Kenshin", series:"Rurouni Kenshin", face:[0.475,0.155,0.260] },        { name:"Megumi", series:"Jujutsu Kaisen", face:[0.580,0.097,0.104] },
+  { name:"Nobara", series:"Jujutsu Kaisen", face:[0.610,0.118,0.128] },          { name:"Maki", series:"Jujutsu Kaisen", face:[0.565,0.088,0.138] },
+  { name:"Aoi Todo", series:"Jujutsu Kaisen", face:[0.530,0.395,0.490] },        { name:"Nanami", series:"Jujutsu Kaisen", face:[0.500,0.450,0.900] },
+  { name:"Roy Mustang", series:"Fullmetal Alchemist", face:[0.450,0.178,0.255] }, { name:"Scar", series:"Fullmetal Alchemist", face:[0.500,0.280,0.380] },
+  { name:"Olivier", series:"Fullmetal Alchemist", face:[0.530,0.330,0.420] },    { name:"Armin", series:"Attack on Titan", face:[0.480,0.315,0.590] },
+  { name:"Annie", series:"Attack on Titan", face:[0.470,0.490,0.680] },          { name:"Denji", series:"Chainsaw Man", face:[0.430,0.270,0.380] },
+  { name:"Power", series:"Chainsaw Man", face:[0.470,0.410,0.420] },             { name:"Loid", series:"Spy x Family", face:[0.550,0.180,0.320] },
+  { name:"Yor", series:"Spy x Family", face:[0.300,0.200,0.260] },               { name:"Anya", series:"Spy x Family", face:[0.500,0.255,0.330] },
+  { name:"Light", series:"Death Note", face:[0.600,0.390,0.720] },               { name:"L", series:"Death Note", face:[0.480,0.380,0.750] },
+  { name:"Frieren", series:"Frieren", face:[0.430,0.180,0.260] },                { name:"Mob", series:"Mob Psycho 100", face:[0.480,0.260,0.500] },
+  { name:"Jotaro", series:"JoJo's Bizarre Adventure", face:[0.520,0.440,0.520] }, { name:"Asuka", series:"Evangelion", face:[0.500,0.380,0.650] },
+  { name:"Sailor Moon", series:"Sailor Moon", face:[0.470,0.230,0.380] },        { name:"Lelouch", series:"Code Geass", face:[0.500,0.330,0.550] },
+  { name:"Marth", series:"Fire Emblem", face:[0.575,0.260,0.118] },
 ];
 
 /* ================================================================== */
@@ -574,14 +618,38 @@ function puckEl(n,big){
   d.textContent="P"+n;
   return d;
 }
+/* Face framing. Zoom until the face box is FACE_FILL of the frame height,
+   centre it across and put its centre FACE_Y down the frame, then clamp so
+   the image always covers the frame. Worked in a W x 1 frame (W = aspect)
+   and written as % of the frame, so it holds at any pixel size. An entry
+   with no usable face tag keeps the CSS cover crop. */
+const FACE_FILL = 0.60, FACE_Y = 0.45;
+const ASPECT_TILE = 13/9, ASPECT_PORTRAIT = 1;
+function frameFace(img, face, aspect){
+  const iw=img.naturalWidth, ih=img.naturalHeight;
+  if(!iw || !ih || !Array.isArray(face) || face.length!==3) return;
+  const [cx,cy,fh]=face;
+  if(![cx,cy,fh].every(v=>typeof v==="number" && isFinite(v)) || fh<=0) return;
+  const W=aspect, H=1;
+  const s=Math.max(W/iw, H/ih, FACE_FILL*H/(fh*ih));
+  const dw=iw*s, dh=ih*s;
+  const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+  const left=clamp(W/2-cx*iw*s, W-dw, 0);
+  const top =clamp(FACE_Y*H-cy*ih*s, H-dh, 0);
+  const pct=v=>(v*100).toFixed(3)+"%";
+  img.classList.add("framed");
+  img.style.left=pct(left/W);  img.style.top=pct(top/H);
+  img.style.width=pct(dw/W);   img.style.height=pct(dh/H);
+}
 /* Portrait loader. With no img on the roster entry this tries images/<slug>.png,
-   then .jpg, and leaves the placeholder in place if neither is there. */
-function portraitInto(c, onLoad){
+   then .jpg, and leaves the placeholder in place if neither is there. `aspect`
+   is the frame's width/height, for the face framing. */
+function portraitInto(c, aspect, onLoad){
   const id=slug(c.name);
   const srcs = c.img ? [c.img] : ["images/"+id+".png","images/"+id+".jpg"];
   let k=0;
   const i=document.createElement("img"); i.alt="";
-  i.addEventListener("load",()=>onLoad(i));
+  i.addEventListener("load",()=>{ frameFace(i, c.face, aspect); onLoad(i); });
   i.addEventListener("error",()=>{ if(++k<srcs.length) i.src=srcs[k]; });
   i.src=srcs[0];
 }
@@ -595,7 +663,7 @@ function renderRoster(){
     tile.title=c.series?`${c.name} — ${c.series}`:c.name;
     const art=document.createElement("div"); art.className="art"; washFor(art,c.name);
     const v=document.createElement("div");v.className="initials";v.textContent=initialsFor(c.name);art.appendChild(v);
-    portraitInto(c, i=>{ v.remove(); art.appendChild(i); });
+    portraitInto(c, ASPECT_TILE, i=>{ v.remove(); art.appendChild(i); });
     tile.appendChild(art);
     const on=pucksOn(id);
     if(on.length){
@@ -640,7 +708,7 @@ function renderSlots(){
     if(c){
       const p=document.createElement("div"); p.className="portrait"; washFor(p,c.name);
       p.textContent=initialsFor(c.name);
-      portraitInto(c, i=>{ p.textContent=""; p.appendChild(i); });
+      portraitInto(c, ASPECT_PORTRAIT, i=>{ p.textContent=""; p.appendChild(i); });
       art.appendChild(p);
     }else{
       const e=document.createElement("div"); e.className="empty";
@@ -864,6 +932,61 @@ function updateHot(ev){
   for(const el of document.querySelectorAll(".tile.hot,.slot.hot")) el.classList.remove("hot");
   if(t) t.classList.add("hot"); else if(s) s.classList.add("hot");
 }
+
+/* ---------- roster fit ----------
+   On desktop the bar, the whole roster, the seat row and the footer share one
+   viewport. The bar (66px), the seat row (always reserves card + 11px) and
+   the footer (fixed 32px) are the same height for every role, so the same
+   window size always gives the same grid; peer gloves are drawn by viewport
+   fraction and only point at the right tile when layouts match.
+   A tile of width w is 2px frame + 13:9 art + 17px plate + 2px frame, i.e.
+   21 + (w-4)*9/13 tall. For each row count (cols = ceil(n/rows)) take the
+   widest tile that fits both ways and keep the best. If nothing reaches
+   TILE_MIN the page scrolls at TILE_MIN rather than shrinking further.
+   Phones (<=900px) skip this: CSS defaults (104px tiles) and scrolling.
+   Only sets two custom properties on #roster; never rebuilds tiles. */
+const TILE_GAP=3, TILE_EDGE=4, TILE_PLATE=17, TILE_ART=9/13, TILE_MIN=64, TILE_MAX=132;
+const phoneMQ=window.matchMedia("(max-width:900px)");
+function fitRoster(){
+  const host=document.getElementById("roster");
+  if(phoneMQ.matches){ host.style.removeProperty("--tw"); host.style.removeProperty("--cols"); return; }
+  const stage=host.parentElement, bs=getComputedStyle(document.body);
+  const gap=parseFloat(getComputedStyle(stage).rowGap)||0;
+  let chrome=0;
+  for(const el of stage.children) if(el!==host) chrome+=el.offsetHeight+gap;
+  // Width as if there were no vertical scrollbar. A fitted roster never
+  // overflows, so in steady state there is none; a stale one left by a
+  // shrinking resize goes away because .roster has no max-width on desktop
+  // and so cannot wrap into extra rows while the scrollbar is still there.
+  const W=window.innerWidth-parseFloat(bs.paddingLeft)-parseFloat(bs.paddingRight);
+  const H=document.documentElement.clientHeight-parseFloat(bs.paddingTop)-parseFloat(bs.paddingBottom)-chrome-1;
+  const n=Math.max(1,ROSTER.length);
+  let best=-Infinity, cols=1;
+  for(let rows=1;rows<=n;rows++){
+    const c=Math.ceil(n/rows);
+    const byW=(W-(c-1)*TILE_GAP)/c;
+    const byH=TILE_EDGE+((H-(rows-1)*TILE_GAP)/rows-TILE_EDGE-TILE_PLATE)/TILE_ART;
+    const w=Math.min(byW,byH,TILE_MAX);
+    if(w>best){ best=w; cols=c; }
+  }
+  if(best<TILE_MIN){
+    const fit=Math.max(1,Math.floor((W+TILE_GAP)/(TILE_MIN+TILE_GAP)));
+    cols=Math.ceil(n/Math.ceil(n/fit)); best=TILE_MIN;
+  }
+  host.style.setProperty("--tw",Math.floor(best)+"px");
+  host.style.setProperty("--cols",String(cols));
+}
+let fitQueued=false;
+function queueFit(){
+  if(fitQueued) return; fitQueued=true;
+  requestAnimationFrame(()=>{ fitQueued=false; fitRoster(); });
+}
+window.addEventListener("resize",queueFit);
+if(window.ResizeObserver){
+  const ro=new ResizeObserver(queueFit);
+  for(const el of document.querySelector(".stage").children) if(el.id!=="roster") ro.observe(el);
+}
+fitRoster();
 
 /* ---------- join ---------- */
 const joinEl=document.getElementById("join");
