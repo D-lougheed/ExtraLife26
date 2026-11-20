@@ -45,7 +45,7 @@ Everyone uses the same URL; the join screen sorts out who is who.
 |---|---|
 | **Player** | Takes the next free seat (P1, P2, P3 in join order), carries a puck, picks a fighter |
 | **Viewer** | The broadcast source. No cursor of its own and no interface chrome — just the board and everyone's hands. This is the one to point OBS at |
-| **Admin** | Runs the board and takes no seat, keeping a plain glove to point with, plus **Lock it in** and **Clear board**. Password gated |
+| **Admin** | Runs the board and takes no seat, keeping a plain glove to point with, plus **Lock it in** and **Clear board**. The **×** in a seat's corner removes that one player (no confirm, locked or not), who lands back on the join screen and can pick Player again. Password gated |
 
 For OBS: add it as a **Browser Source**, set width and height to your canvas, and
 turn off *Shutdown source when not visible* so it stays connected while you are
@@ -137,15 +137,17 @@ Two files, split so the interesting logic is not tangled with socket plumbing.
 | `server.js` | Transport. Serves the files, holds the WebSocket room, calls `room.js` and fans out the result, mirrors state to `state.json` |
 
 The room is `{ seats, locked, game }`. Clients send `hello`, `claim`, `seat`,
-`lock`, `clear`, `game` and `hand`; the server answers with `state` (the whole
-room, after any change), `hand` (relayed, never stored), `gone` (drop that
-glove) and `full`.
+`lock`, `clear`, `kick` (admin only, `{ t:"kick", seat:n }`), `game` and
+`hand`; the server answers with `state` (the whole room, after any change),
+`hand` (relayed, never stored), `gone` (drop that glove), `full` and `kicked`
+(sent to the removed player's sockets, which the server then treats as viewers
+so they cannot simply claim again).
 
 Seat claiming is atomic: the server picks the lowest free seat under one lock,
 so there is no race to resolve and no retry loop in the page. A seat is held by
 `viewer_id` and is **not** freed when a socket closes — a reload, a flaky phone
-or a dropped tunnel puts that player back in their own chair. Only *Clear board*
-frees seats.
+or a dropped tunnel puts that player back in their own chair. Only *Clear board*,
+or the admin removing one player, frees seats.
 
 The page reconnects on its own with backoff (500ms doubling to 5s, jittered), so
 an OBS source that loses its socket comes back by itself rather than sitting

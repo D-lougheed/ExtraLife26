@@ -144,6 +144,16 @@ body.gloved,body.gloved *{cursor:none}
 .pnum{font-family:var(--display);font-style:italic;font-size:28px;line-height:1;text-align:left;
   background-image:linear-gradient(180deg,#E9EEF5,#9AA6B4 48%,#6A7684 52%,#D6DDE6);
   -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(20,26,34,.85)}
+/* Admin only: the x that frees a seat. A twin of the name tag in the opposite
+   corner, absolutely placed so the seat row's size never changes; ::after
+   widens the hit area for phones without moving anything. */
+.kick{position:absolute;right:8px;top:0;z-index:4;width:22px;height:20px;padding:1px;border:0;border-radius:2px;
+  background:linear-gradient(180deg,var(--steel-2),var(--steel-4));font:inherit;color:inherit;cursor:pointer}
+.kick::after{content:"";position:absolute;inset:-5px}
+.kick i{display:grid;place-items:center;height:100%;border-radius:1px;font-style:normal;font-weight:700;font-size:15px;
+  line-height:1;color:#EDF2F8;background:linear-gradient(180deg,#232C37,#0E141B)}
+.kick:hover i,.kick:focus-visible i{background:linear-gradient(180deg,#E8564A,#96271C);color:#fff}
+.slot.kickable .hmn i{max-width:150px}
 
 /* footer */
 /* Fixed height on desktop, even when empty (viewer), so every role at the same
@@ -246,6 +256,7 @@ body.gloved,body.gloved *{cursor:none}
         <button class="roleBtn" data-role="viewer" type="button">Viewer<small>watch only</small></button>
         <button class="roleBtn" data-role="admin"  type="button">Admin<small>run the show</small></button>
       </div>
+      <div class="pwMsg" id="kickMsg" hidden>The host removed you from your seat.</div>
     </div>
     <div id="pwRow" hidden>
       <label for="pw">Admin password</label>
@@ -605,6 +616,13 @@ function clearBoard(){
   render();
   sendMsg({ t:"clear" });
 }
+/* Frees one seat, locked or not. No confirm: while testing the host wants a
+   stray player gone fast, and a removed player can simply rejoin. */
+function kickSeat(n){
+  if(ROLE!=="admin" || !sendMsg({ t:"kick", seat:n })) return;
+  slots={ ...slots }; delete slots[String(n)];            // optimistic
+  render();
+}
 
 /* The server picks the lowest free seat under one lock and answers with the
    whole room, so there is no race to resolve here and no retry loop. */
@@ -732,6 +750,16 @@ function renderSlots(){
     const hi=document.createElement("i");
     hi.textContent=s.player_name ? s.player_name.toUpperCase() : "HMN";
     hmn.appendChild(hi); slot.appendChild(hmn);
+
+    if(ROLE==="admin"){
+      const who=s.player_name||"this player", tip=`Remove ${who} from seat ${n}`;
+      const k=document.createElement("button"); k.type="button"; k.className="kick";
+      k.title=tip; k.setAttribute("aria-label",tip);
+      const ki=document.createElement("i"); ki.textContent="×"; k.appendChild(ki);
+      k.addEventListener("pointerdown",e=>e.stopPropagation());   // not a puck press
+      k.addEventListener("click",e=>{ e.stopPropagation(); kickSeat(n); });
+      slot.classList.add("kickable"); slot.appendChild(k);
+    }
 
     const card=document.createElement("div"); card.className="card"+(c?"":" blank");
     const fill=document.createElement("div"); fill.className="fill";
@@ -1036,6 +1064,7 @@ const goBtn=document.getElementById("go");
 const pwRow=document.getElementById("pwRow");
 const pwIn=document.getElementById("pw");
 const pwMsg=document.getElementById("pwMsg");
+const kickMsg=document.getElementById("kickMsg");
 const pwOk=()=>pwIn.value.trim().length>0;   // the server is the judge now
 let pickedRole=null;
 
@@ -1049,7 +1078,7 @@ document.querySelectorAll(".roleBtn").forEach(b=>{
   b.addEventListener("click",()=>{
     pickedRole=b.dataset.role;
     document.querySelectorAll(".roleBtn").forEach(o=>o.classList.toggle("sel",o===b));
-    pwRow.hidden = pickedRole!=="admin"; pwMsg.hidden=true;
+    pwRow.hidden = pickedRole!=="admin"; pwMsg.hidden=true; kickMsg.hidden=true;
     if(pickedRole==="admin") pwIn.focus();
     refreshGo();
   });
@@ -1080,8 +1109,14 @@ if(pwDenied){
   pwRow.hidden=false; pwMsg.hidden=false; refreshGo(); pwIn.focus();
 }
 
+/* A player the host removed lands back here too, name kept and no role
+   picked; choosing Player again takes the next free seat. */
+let wasKicked=false;
+try{ wasKicked = sessionStorage.getItem("elKicked")==="1"; sessionStorage.removeItem("elKicked"); }catch(e){}
+if(wasKicked) kickMsg.hidden=false;
+
 const savedRole = stored("elRole");
-if(!pwDenied && (savedRole==="player"||savedRole==="viewer"||savedRole==="admin")){
+if(!pwDenied && !wasKicked && (savedRole==="player"||savedRole==="viewer"||savedRole==="admin")){
   pickedRole=savedRole; nameIn.value=stored("elName")||"";
   myPw = stored("elAdminPw")||"";              // so a reload mid-show does not re-prompt
   enter();
@@ -1174,6 +1209,13 @@ function connect(){
       try{
         localStorage.removeItem("elRole"); localStorage.removeItem("elAdminPw");
         sessionStorage.setItem("elPwBad","1");
+      }catch(e){}
+      location.reload();
+    }
+    else if(m.t==="kicked"){                   // the host freed our seat
+      try{
+        localStorage.removeItem("elRole");      // elName stays for the rejoin
+        sessionStorage.setItem("elKicked","1");
       }catch(e){}
       location.reload();
     }

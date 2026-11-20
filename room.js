@@ -60,9 +60,11 @@ function seatOfViewer(state, viewerId) {
      broadcast  send to everyone, sender included
      reply      send to the sender only
      relay      send to everyone except the sender
+     kick       (only on a kick) the viewer_id that lost its seat, so the
+                transport can tell that player's sockets
    A seat is never freed when a socket closes — it is held by viewerId so a
    reload or a dropped tunnel puts the player back in their own chair. Only
-   Clear board frees seats. */
+   Clear board, or the admin kicking one seat, frees seats. */
 function apply(state, conn, msg) {
   const none = { state, broadcast: null, reply: null, relay: null };
   if (!msg || typeof msg.t !== 'string') return none;
@@ -108,6 +110,18 @@ function apply(state, conn, msg) {
       // seats go, trivia progress stays: a mid-show reset must not replay spent clues
       return push({ ...state, seats: {}, locked: false,
         game: { ...state.game, started: false, open: null, revealed: false } });
+
+    case 'kick': {
+      // frees one seat, locked or not; leaves the game and the lock alone
+      if (!isAdmin) return none;
+      const n = msg.seat;
+      if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > SEATS) return none;
+      const row = state.seats[String(n)];
+      if (!row) return none;
+      const seats = { ...state.seats };
+      delete seats[String(n)];
+      return { ...push({ ...state, seats }), kick: row.viewer_id };
+    }
 
     case 'game':
       if (!isAdmin) return none;

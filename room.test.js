@@ -136,4 +136,65 @@ it('a demoted admin cannot drive the game', () => {
   assert.strictEqual(s.locked, false);
 });
 
+const VW = { viewerId:'v8', name:'OBS', role:'viewer', tabId:'t8' };
+const full = () => { let s = room.emptyState(); for (const p of [P1, P2, P3]) s = claim(s, p).state; return s; };
+
+it('an admin kick frees exactly that seat and names who sat there', () => {
+  const s = full();
+  const r = room.apply(s, AD, { t:'kick', seat:2 });
+  assert.deepStrictEqual(Object.keys(r.state.seats).sort(), ['1','3']);
+  assert.strictEqual(r.kick, 'v2');
+  assert.strictEqual(r.broadcast.t, 'state');
+  assert.strictEqual(r.broadcast.room, r.state);
+  assert.strictEqual(s.seats['2'].viewer_id, 'v2', 'the old state was mutated');
+});
+
+it('a kick leaves every other seat as it was', () => {
+  let s = full();
+  s = room.apply(s, P1, { t:'seat', patch:{ character_id:'eren', px:0.2, py:0.7 } }).state;
+  s = room.apply(s, P3, { t:'seat', patch:{ held:true } }).state;
+  const r = room.apply(s, AD, { t:'kick', seat:2 });
+  assert.deepStrictEqual(r.state.seats['1'], s.seats['1']);
+  assert.deepStrictEqual(r.state.seats['3'], s.seats['3']);
+});
+
+it('players and viewers cannot kick', () => {
+  const s = full();
+  for (const who of [P1, P3, VW]) {
+    const r = room.apply(s, who, { t:'kick', seat:2 });
+    assert.strictEqual(r.state, s, who.role + ' kicked');
+    assert.strictEqual(r.broadcast, null);
+    assert.strictEqual(r.kick, undefined);
+  }
+});
+
+it('kicking an empty or out-of-range seat changes nothing', () => {
+  let s = claim(room.emptyState(), P1).state;
+  s = claim(s, P2).state;
+  for (const seat of [3, 0, 4, -1, 1.5, NaN, Infinity, '2', null, undefined, true, {}]) {
+    const r = room.apply(s, AD, { t:'kick', seat });
+    assert.strictEqual(r.state, s, 'seat ' + String(seat) + ' changed the room');
+    assert.strictEqual(r.broadcast, null);
+    assert.strictEqual(r.kick, undefined);
+  }
+  assert.strictEqual(room.apply(room.emptyState(), AD, { t:'kick', seat:1 }).kick, undefined);
+});
+
+it('a kick works on a locked board and leaves the lock and the game alone', () => {
+  let s = full();
+  s = room.apply(s, AD, { t:'game', patch:{ started:true, page:1, used:['0-0-0'] } }).state;
+  s = room.apply(s, AD, { t:'lock', v:true }).state;
+  const r = room.apply(s, AD, { t:'kick', seat:1 });
+  assert.deepStrictEqual(Object.keys(r.state.seats).sort(), ['2','3']);
+  assert.strictEqual(r.state.locked, true);
+  assert.strictEqual(r.state.game, s.game);
+  assert.deepStrictEqual(r.state.game, { started:true, page:1, open:null, revealed:false, used:['0-0-0'] });
+});
+
+it('a kicked player can claim again and gets the freed seat', () => {
+  let s = room.apply(full(), AD, { t:'kick', seat:2 }).state;
+  s = claim(s, P2).state;
+  assert.strictEqual(s.seats['2'].viewer_id, 'v2');
+});
+
 console.log('\n' + pass + ' passing');

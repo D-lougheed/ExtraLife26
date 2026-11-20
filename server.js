@@ -130,6 +130,13 @@ wss.on('connection', ws => {
 
     const out = room.apply(state, conn, msg);
     if (out.state !== state) { state = out.state; save(); }
+    if (typeof out.kick === 'string') {             // the admin freed a seat
+      for (const [w, c] of conns) {
+        if (c.viewerId !== out.kick || c.role !== 'player') continue;
+        c.role = 'viewer';                          // this socket cannot claim again
+        send(w, { t: 'kicked' });
+      }
+    }
     if (out.reply) send(ws, out.reply);
     if (out.broadcast) toAll(out.broadcast);
     if (out.relay) toOthers(ws, out.relay);
