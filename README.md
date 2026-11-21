@@ -72,7 +72,7 @@ is `PORT` in the environment:
 |---|---|
 | `OPPOSITION` | The text after "vs" in the top banner |
 | `ROSTER` | The character list |
-| `BOARDS` | The jeopardy boards: three of them, six categories each, six clues per category worth 1-6 Focus (`v`) |
+| `BOARDS` | The jeopardy boards: six of them, six categories each, six clues per category worth 1-6 Focus (`v`) |
 
 A roster entry needs only a name:
 
@@ -107,7 +107,7 @@ viewer — onto the board. The flow from there:
 3. **Next** marks that cell dark and unpickable and returns everyone to the grid.
 
 Clearing the last cell on a board moves straight to the next one, so the night
-runs board 1 to board 3 without an extra click. **Next board** skips ahead early;
+runs board 1 to board 6 without an extra click. **Next board** skips ahead early;
 **Back to party select** returns everyone to the roster screen.
 
 Only the admin can pick. Players and viewers see the same screen with no

@@ -354,7 +354,7 @@ const ROSTER = [
 
 
 /* ================= JEOPARDY =================
-   Three boards, six categories each, six clues per category. `v` is the
+   Six boards, six categories each, six clues per category. `v` is the
    clue's Focus, 1-6 from the top row down; the cell shows it as the big
    number. `q` is what goes on screen when the cell is picked; `a` is what the
    reveal shows. The grid is drawn from this array, so adding or cutting
@@ -492,6 +492,138 @@ const BOARDS = [
     { v:4, q:`In Fate/stay night, Saber keeps Excalibur, whose famous blade would give away her true identity, wrapped in this Bounded Field.`, a:`Invisible Air (Barrier of the Wind King)` },
     { v:5, q:`In Akira, Tetsuo loses his right arm when the military fires this orbital laser satellite at him.`, a:`SOL` },
     { v:6, q:`In Rurouni Kenshin, Kenshin's reverse-blade sword was one of the last blades made by this master swordsmith, famed for inventive killing weapons.`, a:`Arai Shakku` } ]} ]},
+
+{ title:`Round Two`, cats:[
+  { name:`Naruto`, clues:[
+    { v:1, q:`In the very first episode, this Academy instructor tricks Naruto into stealing the Scroll of Seals, planning to frame him and keep the scroll.`, a:`Mizuki` },
+    { v:2, q:`Itachi puts Kakashi in the hospital with this Mangekyo Sharingan genjutsu, which crams days of torture into a few seconds of real time.`, a:`Tsukuyomi` },
+    { v:3, q:`On the Sasuke Retrieval mission, Rock Lee mistakes a bottle of sake for his medicine and starts fighting in this wild, unpredictable style.`, a:`Drunken Fist / Suiken` },
+    { v:4, q:`Tsunade bets this heirloom, once her grandfather's, that Naruto can't master the Rasengan within a week; Naruto puts up his frog wallet.`, a:`The First Hokage's necklace / her necklace` },
+    { v:5, q:`Kakashi's father Sakumo, shamed for abandoning a mission to save his comrades, had been famous across the shinobi world by this nickname.`, a:`The White Fang / White Fang of the Leaf / Konoha's White Fang` },
+    { v:6, q:`Jiraiya's three-step Rasengan training starts with popping a water balloon and ends with holding a plain balloon still; the middle step is destroying this.`, a:`A rubber ball` } ]},
+  { name:`Demon Slayer`, clues:[
+    { v:1, q:`Tanjiro's first teacher, a retired Water Hashira who always hides his face behind a red tengu mask, is this man.`, a:`Sakonji Urokodaki / Urokodaki` },
+    { v:2, q:`Aboard the Mugen Train, this Lower Moon One puts the passengers and Demon Slayers to sleep and traps them inside dreams.`, a:`Enmu` },
+    { v:3, q:`Former shinobi Tengen Uzui, the Sound Hashira, constantly demands that everything be this, his favourite word.`, a:`Flamboyant / flashy (hade)` },
+    { v:4, q:`Upper Moon Five Gyokko, who raids the Swordsmith Village, hides inside and teleports between these objects, which he crafts and calls art.`, a:`Pots / vases / jars` },
+    { v:5, q:`This hot-tempered swordsmith, hidden behind a hyottoko mask, chases Tanjiro with kitchen knives every time Tanjiro breaks one of his blades.`, a:`Hotaru Haganezuka / Haganezuka` },
+    { v:6, q:`Final Selection is held on this mountain, where wisteria blooming in every season keeps the captured demons trapped inside.`, a:`Mount Fujikasane / Fujikasane` } ]},
+  { name:`One Piece`, clues:[
+    { v:1, q:`Zoro carries the Wado Ichimonji in memory of this childhood rival from his dojo, who died after a fall down a flight of stairs.`, a:`Kuina` },
+    { v:2, q:`Before joining Luffy, Sanji worked as sous chef at this floating East Blue restaurant, run by his peg-legged mentor Zeff.`, a:`The Baratie` },
+    { v:3, q:`As Crocodile's partner in Baroque Works, Nico Robin hid her true name behind this codename.`, a:`Miss All Sunday` },
+    { v:4, q:`This Devil Fruit let Brook's soul return to the world of the living after he died, though it took him a year to find his body.`, a:`The Revive-Revive Fruit / Yomi Yomi no Mi` },
+    { v:5, q:`Before he called himself Franky, the cyborg shipwright of Water 7 was born with this name.`, a:`Cutty Flam` },
+    { v:6, q:`In Luffy's childhood flashback, Shanks loses his left arm saving the boy from this Sea King, which Luffy finally defeats ten years later.`, a:`The Lord of the Coast / Kinkai no Nushi` } ]},
+  { name:`My Hero Academia`, clues:[
+    { v:1, q:`After All Might retires, this flame-wielding hero, Shoto Todoroki's father, becomes the new No. 1 Pro Hero.`, a:`Endeavor / Enji Todoroki` },
+    { v:2, q:`Known as the Hero Killer, this blade-wielding villain paralyzes his victims by licking their blood.`, a:`Stain / Chizome Akaguro` },
+    { v:3, q:`This former sidekick of All Might, whose Quirk Foresight lets him see a person's future, is Mirio Togata's mentor.`, a:`Sir Nighteye / Mirai Sasaki` },
+    { v:4, q:`Overhaul uses young Eri's blood to make Quirk-destroying bullets, hoping to restore the power of this yakuza group he leads.`, a:`The Shie Hassaikai / Eight Precepts of Death` },
+    { v:5, q:`This elderly scientist, All For One's loyal partner, builds the Nomu while keeping up the public face of a kindly hospital physician.`, a:`Kyudai Garaki / Daruma Ujiko / the Doctor` },
+    { v:6, q:`All Might's own mentor, the One For All holder just before him, was this woman, who turns out to be Tomura Shigaraki's grandmother.`, a:`Nana Shimura` } ]},
+  { name:`Dragon Ball`, clues:[
+    { v:1, q:`In Dragon Ball Z, Goku and Vegeta merge into Vegito by each wearing one of these Supreme Kai accessories.`, a:`Potara earrings / Potara` },
+    { v:2, q:`In Dragon Ball Z, Cell must absorb these two siblings, both creations of Dr. Gero, to reach his Perfect form.`, a:`Android 17 and Android 18 (both needed)` },
+    { v:3, q:`In Dragon Ball Super, this gluttonous God of Destruction of Universe 6 is Beerus's twin brother and lifelong rival.`, a:`Champa` },
+    { v:4, q:`After escaping Namek's explosion, Goku spent his recovery on this planet, whose physically weak people taught him Instant Transmission.`, a:`Yardrat` },
+    { v:5, q:`When Gohan snaps the Z Sword in half, he frees this lecherous deity, sealed inside by Beerus, who then spends a full day ritually unlocking Gohan's hidden power.`, a:`Old Kai / Elder Kai / the Supreme Kai of 15 generations ago` },
+    { v:6, q:`In the DBZ TV special about Goku's father, Bardock gains visions of the future from a dying native of this planet he helped conquer.`, a:`Kanassa / Planet Kanassa` } ]},
+  { name:`Hunter x Hunter`, clues:[
+    { v:1, q:`Hisoka's signature Transmuter ability makes his aura stretchy and sticky, so he can attach it to opponents and yank them back. It is called this.`, a:`Bungee Gum` },
+    { v:2, q:`Visitors to the Zoldyck estate must push open this seven-door entrance, where each door is twice as heavy as the one before it.`, a:`The Testing Gate / Gate of Testing / Tameshi no Mon` },
+    { v:3, q:`Beaten by Meruem, Netero pierces his own heart to set off this poison-laced bomb that was implanted in his chest.`, a:`The Poor Man's Rose / Miniature Rose` },
+    { v:4, q:`This Nen ability of Kite's conjures a random weapon picked by the roulette on a talking clown's tongue, a restriction that makes each weapon stronger.`, a:`Crazy Slots` },
+    { v:5, q:`This punch-activated Nen ability of Knuckle Bine's lends his aura to the target and adds 10 percent interest every 10 seconds until the debt exceeds their aura.`, a:`Hakoware / A.P.R.` },
+    { v:6, q:`Of the two modes of Killua's Godspeed, this one programs his electric aura so his body reacts automatically to any stimulus.`, a:`Whirlwind / Shippu Jinrai` } ]} ]},
+
+{ title:`Deeper Cuts`, cats:[
+  { name:`Naruto: Deep Lore`, clues:[
+    { v:1, q:`This foul-mouthed, unkillable Akatsuki member kills Asuma Sarutobi with a blood ritual that turns wounds on his own body into wounds on his victim.`, a:`Hidan` },
+    { v:2, q:`Akatsuki's stitched-together bounty hunter Kakuzu extends his own life by ripping these out of strong opponents and keeping them in his body.`, a:`Hearts / their hearts` },
+    { v:3, q:`The orange-haired Deva Path of Pain, who flattens Konoha with Shinra Tensei, is the corpse of this childhood friend of Nagato and Konan.`, a:`Yahiko` },
+    { v:4, q:`Minato made it legendary as the Yellow Flash, but the Flying Thunder God teleportation technique was originally invented by this man.`, a:`Tobirama Senju / the Second Hokage` },
+    { v:5, q:`Because her luck at gambling is so famously bad, people who win money off Tsunade mockingly call her this.`, a:`The Legendary Sucker / Densetsu no Kamo` },
+    { v:6, q:`Naruto's name comes from the hero of this first novel Jiraiya ever wrote, a book that sold poorly.`, a:`The Tale of the Utterly Gutsy Shinobi / Tales of a Gutsy Ninja` } ]},
+  { name:`Demon Slayer: Deep Lore`, clues:[
+    { v:1, q:`Too physically weak to cut off a demon's head, this Insect Hashira kills demons by injecting them with wisteria poison.`, a:`Shinobu Kocho / Shinobu` },
+    { v:2, q:`Kanao Tsuyuri, who could not make decisions for herself, relied on doing this, a habit Kanae Kocho gave her, until Tanjiro encouraged her.`, a:`Flipping a coin / a coin toss` },
+    { v:3, q:`The Love Hashira, Mitsuri Kanroji, says her pink-and-green hair came from eating far too much of this sweet.`, a:`Sakura mochi / sakuramochi` },
+    { v:4, q:`Muzan was turned into a demon by a doctor's medicine, and he has spent centuries hunting this missing ingredient, believed to end his weakness to sunlight.`, a:`The Blue Spider Lily` },
+    { v:5, q:`Giyu Tomioka's half-and-half haori is stitched from his late sister Tsutako's kimono and the clothing of this fox-masked friend from his training days.`, a:`Sabito` },
+    { v:6, q:`Sanemi Shinazugawa has this special kind of blood, whose scent is so potent that a single whiff leaves demons stumbling as if drunk.`, a:`Marechi (accept: rare blood)` } ]},
+  { name:`One Piece: Deep Lore`, clues:[
+    { v:1, q:`This Paramecia Devil Fruit of Whitebeard's, feared as a power that could destroy the world, let him crack the very air like glass.`, a:`The Tremor-Tremor Fruit / Quake-Quake Fruit / Gura Gura no Mi` },
+    { v:2, q:`Young Sabo set out to sea alone, only for his little boat to be blown apart by Saint Jalmack, one of these privileged aristocrats.`, a:`A Celestial Dragon / World Noble / Tenryubito` },
+    { v:3, q:`This former first mate of the Pirate King, nicknamed the Dark King, now makes a living coating ships on the Sabaody Archipelago.`, a:`Silvers Rayleigh / Rayleigh` },
+    { v:4, q:`Gol D. Roger reached the end of the Grand Line aboard this ship, built by the fish-man shipwright Tom from Adam wood.`, a:`The Oro Jackson` },
+    { v:5, q:`During Luffy's break-in at Impel Down, this chief warden's Venom-Venom Fruit poisoned him nearly to death.`, a:`Magellan` },
+    { v:6, q:`This giant former Marine Vice Admiral befriended young Robin on Ohara, taught her his odd laugh, and shielded her during the Buster Call.`, a:`Jaguar D. Saul / Saul` } ]},
+  { name:`Bleach`, clues:[
+    { v:1, q:`This bucket-hatted owner of a Karakura Town candy shop, secretly a former 12th Division captain, gives Rukia her special gigai.`, a:`Kisuke Urahara / Urahara` },
+    { v:2, q:`Orihime's six fairy-like spirits, the Shun Shun Rikka, are housed in these, a gift from her late older brother Sora.`, a:`Her hairpins / hair clips` },
+    { v:3, q:`Head Captain Yamamoto's zanpakuto, said to be the oldest and most powerful in all of Soul Society, can reduce whatever it strikes to ash. It is called this.`, a:`Ryujin Jakka` },
+    { v:4, q:`Before becoming a Karakura doctor, Ichigo's father served as captain of this Gotei 13 division, under the name Isshin Shiba.`, a:`The 10th Division / Squad 10` },
+    { v:5, q:`In the Thousand-Year Blood War, Kenpachi Zaraki finally hears and speaks his zanpakuto's name, which is this.`, a:`Nozarashi` },
+    { v:6, q:`Rukia's Bankai, unveiled in the Thousand-Year Blood War, drops her own body to absolute zero, freezing everything around her. It is called this.`, a:`Hakka no Togame` } ]},
+  { name:`Signature Attacks`, clues:[
+    { v:1, q:`In Jujutsu Kaisen's Hidden Inventory arc, Gojo finishes off Toji Fushiguro by hurling an imaginary mass with this technique.`, a:`Hollow Purple / Hollow Technique: Purple / Murasaki` },
+    { v:2, q:`In Inuyasha, this first great technique of the sword Tessaiga slashes along the rift where the wielder's demonic aura and the enemy's collide.`, a:`Wind Scar / Kaze no Kizu` },
+    { v:3, q:`In JoJo's Bizarre Adventure Part 3, Kakyoin's Stand gathers energy, then fires a shotgun-like burst of glowing projectiles in this, its signature attack.`, a:`Emerald Splash` },
+    { v:4, q:`In Yu Yu Hakusho, Hiei first unleashes this Demon World technique against Zeru at the Dark Tournament, crippling his own arm in the process.`, a:`Dragon of the Darkness Flame / Kokuryuha` },
+    { v:5, q:`In Gurren Lagann, this signature finishing move channels Spiral Power into a giant bit that rams straight through the enemy.`, a:`Giga Drill Break` },
+    { v:6, q:`In Rurouni Kenshin, this is the secret succession technique of the Hiten Mitsurugi style, which Kenshin masters in a duel with his teacher Hiko.`, a:`Amakakeru Ryu no Hirameki / Flash of the Heavenly Soaring Dragon` } ]},
+  { name:`Rivals & Mentors`, clues:[
+    { v:1, q:`In Mob Psycho 100, Mob works for 300 yen an hour under this mentor, a con man with no real psychic powers who runs Spirits and Such.`, a:`Arataka Reigen / Reigen` },
+    { v:2, q:`In Vinland Saga, young Thorfinn fights in the band of this Viking commander, his father's killer, just to earn the right to duel him.`, a:`Askeladd` },
+    { v:3, q:`In Inuyasha, this young leader of a wolf demon tribe first kidnaps Kagome to find Shikon shards, then becomes Inuyasha's rival for her heart.`, a:`Koga / Kouga` },
+    { v:4, q:`In Yu Yu Hakusho, this man, Genkai's teammate and love at a Dark Tournament 50 years earlier, chose to become a demon so he would never age.`, a:`Younger Toguro / Toguro` },
+    { v:5, q:`In JoJo's Bizarre Adventure Part 2, Joseph and Caesar train under this Venice-based Hamon master, later revealed to be Joseph's long-lost mother.`, a:`Lisa Lisa / Elizabeth Joestar` },
+    { v:6, q:`In Frieren, Frieren's own teacher Flamme was once the apprentice of this ancient elf, founder of the Continental Magic Association.`, a:`Serie` } ]} ]},
+
+{ title:`Final Boss`, cats:[
+  { name:`Naruto: Last Call`, clues:[
+    { v:1, q:`During the Fourth Great Ninja War, Kabuto raises an army of dead shinobi, including former Kage, with this forbidden summoning technique.`, a:`Impure World Reincarnation / Edo Tensei / Reanimation Jutsu` },
+    { v:2, q:`Naruto and Sasuke fight twice at this site; in their rematch after the war, each of them loses an arm.`, a:`Valley of the End / the Final Valley` },
+    { v:3, q:`This elderly Sand puppeteer, who once sealed Shukaku into Gaara, later gives her own life to bring him back from the dead.`, a:`Chiyo / Granny Chiyo / Lady Chiyo` },
+    { v:4, q:`Obito's teammate Rin was forcibly made the host of this tailed beast in a plot to unleash it on Konoha, so she threw herself onto Kakashi's Chidori.`, a:`The Three-Tails / Isobu` },
+    { v:5, q:`Fighting Itachi, Sasuke uses fire jutsu to build storm clouds, then calls down natural lightning with this technique named for a mythical beast.`, a:`Kirin` },
+    { v:6, q:`In the Fourth Great Ninja War, Itachi stops Kabuto by trapping him in this forbidden Uchiha genjutsu, an endless loop that ends only when he accepts his true self.`, a:`Izanami` } ]},
+  { name:`Demon Slayer: Last Call`, clues:[
+    { v:1, q:`This six-eyed demon, a former Demon Slayer from the Sengoku era, holds the top spot in the Twelve Kizuki as Upper Moon One.`, a:`Kokushibo` },
+    { v:2, q:`This fellow pupil of Zenitsu under Jigoro Kuwajima betrayed the Corps, became a demon, and filled the Upper Moon Six vacancy left by Gyutaro and Daki.`, a:`Kaigaku` },
+    { v:3, q:`Nakime, the demon who controls the Infinity Castle, shifts its rooms and corridors at will by strumming this instrument.`, a:`A biwa / Japanese lute` },
+    { v:4, q:`Before becoming Upper Moon Three Akaza, he was this young human martial artist, who trained at Keizo's dojo and was engaged to Keizo's daughter Koyuki.`, a:`Hakuji` },
+    { v:5, q:`In the Hashira Training arc, the Hashira learn the price of the Demon Slayer Mark: everyone who awakens it is fated to die before reaching this age.`, a:`25 / twenty-five` },
+    { v:6, q:`Obanai Iguro, the Serpent Hashira, is never seen without this white snake companion coiled around his neck and shoulders.`, a:`Kaburamaru` } ]},
+  { name:`One Piece: Last Call`, clues:[
+    { v:1, q:`At this judicial island, Luffy declares war on the World Government by having Sogeking set its flag ablaze.`, a:`Enies Lobby` },
+    { v:2, q:`Big Mom, the Emperor who rules Totland from Whole Cake Island, was born with this name.`, a:`Charlotte Linlin / Linlin` },
+    { v:3, q:`Luffy's sworn brother Sabo holds this post in the Revolutionary Army, making him its No. 2 under Dragon.`, a:`Chief of Staff` },
+    { v:4, q:`Kin'emon, Denjiro and Kiku belong to this band of Kozuki Oden's loyal samurai retainers in Wano.`, a:`The Nine Red Scabbards / Akazaya Nine` },
+    { v:5, q:`On Dressrosa, the one-legged toy soldier guarding Rebecca was secretly this legendary Colosseum gladiator, her father.`, a:`Kyros` },
+    { v:6, q:`The whale Laboon has waited some 50 years at Twin Cape for this West Blue crew, which promised to come back for him.`, a:`The Rumbar Pirates` } ]},
+  { name:`Hunter x Hunter: Last Call`, clues:[
+    { v:1, q:`Kurapika's Nen weapon that wraps a blade around a victim's heart, killing them if they break the rule he imposes, is called this.`, a:`Judgment Chain` },
+    { v:2, q:`During the Hunter Chairman Election, Leorio wins a surge of votes after his warping punch sends this man flying in front of the crowd.`, a:`Ging Freecss / Ging` },
+    { v:3, q:`Meruem becomes obsessed with Komugi, a blind girl who is the world champion of this board game.`, a:`Gungi` },
+    { v:4, q:`This Phantom Troupe Specialist reads memories by touch, then fires them into her comrades' heads with conjured revolver bullets.`, a:`Pakunoda` },
+    { v:5, q:`This Zoldyck, Killua's younger brother who fights with a paper fan, joins the Phantom Troupe as member number 4, replacing Hisoka.`, a:`Kalluto / Kalluto Zoldyck` },
+    { v:6, q:`Netero hand-picked this council of advisers, including Cheadle Yorkshire and Pariston Hill, to counsel the Hunter Association's chairman.`, a:`The Zodiacs / Zodiac Twelve / Twelve Zodiacs` } ]},
+  { name:`Final Arcs & Endings`, clues:[
+    { v:1, q:`In Death Note's final showdown, Light is finally exposed as Kira by this successor of L, the young leader of the SPK.`, a:`Near / Nate River` },
+    { v:2, q:`In Cowboy Bebop's final episode, a wounded Spike points a finger gun at the Syndicate men on the stairs and whispers this one word before collapsing.`, a:`Bang / "Bang"` },
+    { v:3, q:`Neon Genesis Evangelion's TV finale ends with the whole cast surrounding Shinji, applauding him and all saying this word.`, a:`Congratulations / Omedetou` },
+    { v:4, q:`In Code Geass R2, Lelouch seizes the Britannian throne, then has Suzaku, in Lelouch's old masked rebel disguise, kill him in public: the final plan called this.`, a:`Zero Requiem / the Zero Requiem` },
+    { v:5, q:`In the Rurouni Kenshin manga's final arc, Kenshin faces this vengeful younger brother of his late wife Tomoe.`, a:`Enishi Yukishiro / Enishi` },
+    { v:6, q:`In Madoka Magica's finale, Madoka wishes to stop all witches from ever being created, becoming this new rule of the universe that takes magical girls before they despair.`, a:`The Law of Cycles (accept: she becomes a goddess / concept, 'Madokami')` } ]},
+  { name:`Mangaka & Origins`, clues:[
+    { v:1, q:`Akira Toriyama loosely modeled Dragon Ball's early plot and characters, Goku included, on this classic Chinese novel.`, a:`Journey to the West / Saiyuki` },
+    { v:2, q:`One Punch Man began in 2009 as a self-published webcomic by this pseudonymous artist, who also created Mob Psycho 100.`, a:`ONE` },
+    { v:3, q:`Death Note's writer Tsugumi Ohba and artist Takeshi Obata reunited for this manga about two ninth-graders trying to become manga artists.`, a:`Bakuman / Bakuman.` },
+    { v:4, q:`Hunter x Hunter creator Yoshihiro Togashi married this fellow mangaka, the creator of Sailor Moon, in 1999.`, a:`Naoko Takeuchi` },
+    { v:5, q:`Hiromu Arakawa, raised on a Hokkaido dairy farm, followed Fullmetal Alchemist with this manga set at an agricultural school, drawing on her rural youth.`, a:`Silver Spoon / Gin no Saji` },
+    { v:6, q:`Demon Slayer's famously anonymous creator Koyoharu Gotouge appears in self-portraits as this animal wearing glasses.`, a:`A crocodile / alligator (wani)` } ]} ]},
 ];
 
 const SLOT_COUNT = 3;
